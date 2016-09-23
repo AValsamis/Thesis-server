@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Created by Angelos on 9/18/2016.
- */
 @RestController
 public class AuthorizationController {
 
@@ -19,7 +16,7 @@ public class AuthorizationController {
         User user = new User(username,name,surname,password);
         //check if username exists in database
         // if not save in database and send success message
-        return "User with details" + user.toString() + " is saved in database";
+        return "User with details " + user.toString() + " is saved in database";
     }
 
     @ApiOperation(value = "Login user with given username and password", tags = "Authorization")

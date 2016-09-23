@@ -6,11 +6,11 @@ package gr.uoa.di.entities;
 
 public class AccelerometerStats {
 
-    String x;
+    private String x;
 
-    String y;
+    private String y;
 
-    String z;
+    private String z;
 
     public AccelerometerStats() {
     }

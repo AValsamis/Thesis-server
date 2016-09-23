@@ -3,11 +3,12 @@ package gr.uoa.di.entities;
 /**
  * Created by Angelos on 9/18/2016.
  */
+
 public class User {
-    String username;
-    String name;
-    String surname;
-    String password;
+    private String username;
+    private String name;
+    private String surname;
+    private String password;
 
     public User(String username, String name, String surname, String password) {
         this.username = username;
