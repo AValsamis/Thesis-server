@@ -1,14 +1,28 @@
 package gr.uoa.di.entities;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * Created by Angelos on 9/18/2016.
  */
-
+@Entity
+@Table(name = "user")
 public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column(unique=true)
     private String username;
     private String name;
     private String surname;
+
+    @NotNull
     private String password;
+
+    public User(){}
 
     public User(String username, String name, String surname, String password) {
         this.username = username;
@@ -17,6 +31,26 @@ public class User {
         this.password = password;
     }
 
+
+    public User(long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public String getUsername() {
         return username;
