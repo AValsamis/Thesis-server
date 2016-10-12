@@ -4,25 +4,19 @@ import gr.uoa.di.entities.User;
 import gr.uoa.di.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 public class AuthorizationController {
-
 
     @Autowired
     private UserRepository userRepository;
 
 
     @ApiOperation(value = "Registers user with give username,name,surname & password", tags = "Authorization")
-    @RequestMapping(value = "/register", method = RequestMethod.GET )
-    public String register(@RequestParam(value="username") String username, @RequestParam(value="name") String name, @RequestParam(value="surname") String surname, @RequestParam(value="password") String password) {
+    @RequestMapping(value = "/register/{username}/{name}/{surname}/{password}", method = RequestMethod.GET )
+    public String register(@PathVariable(value="username") String username, @PathVariable(value="name") String name, @PathVariable(value="surname") String surname, @PathVariable(value="password") String password) {
         String userId = "";
         try {
             User user = new User(username,name,surname, password);
