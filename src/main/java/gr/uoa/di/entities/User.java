@@ -12,7 +12,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Long userId;
 
     @Column(unique=true)
     private String username;
@@ -33,15 +33,15 @@ public class User {
 
 
     public User(long id) {
-        this.id = id;
+        this.userId = id;
     }
 
     public Long getId() {
-        return id;
+        return userId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.userId = id;
     }
 
     public String getPassword() {

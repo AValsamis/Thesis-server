@@ -1,24 +1,44 @@
 package gr.uoa.di.entities;
 
+import javax.persistence.*;
+
 /**
  * Created by Sevle on 9/23/2016.
  */
+@Entity
+@Table(name = "wifi")
 public class Wifi {
 
-    private String MacAddress;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long wifiId;
+
+    @Column(unique=true)
+    private String macAddress;
     private String name;
 
+    public Wifi() {
+    }
+
     public Wifi(String macAddress, String name) {
-        MacAddress = macAddress;
+        this.macAddress = macAddress;
         this.name = name;
     }
 
+    public Long getWifiId() {
+        return wifiId;
+    }
+
+    public void setWifiId(Long wifiId) {
+        this.wifiId = wifiId;
+    }
+
     public String getMacAddress() {
-        return MacAddress;
+        return macAddress;
     }
 
     public void setMacAddress(String macAddress) {
-        MacAddress = macAddress;
+        this.macAddress = macAddress;
     }
 
     public String getName() {
@@ -32,7 +52,7 @@ public class Wifi {
     @Override
     public String toString() {
         return "Wifi{" +
-                "MacAddress='" + MacAddress + '\'' +
+                "MacAddress='" + macAddress + '\'' +
                 ", name='" + name + '\'' +
                 '}';
     }
