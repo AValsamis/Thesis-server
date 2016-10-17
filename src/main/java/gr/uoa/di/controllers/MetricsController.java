@@ -1,15 +1,11 @@
 package gr.uoa.di.controllers;
 
-import gr.uoa.di.entities.AccelerometerStats;
-import gr.uoa.di.entities.User;
-import gr.uoa.di.entities.Wifi;
-import gr.uoa.di.entities.Zone;
+import gr.uoa.di.entities.*;
 import gr.uoa.di.repository.UserRepository;
 import gr.uoa.di.repository.WifiRepository;
 import gr.uoa.di.repository.ZoneRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,25 +44,32 @@ public class MetricsController {
 
     @ApiOperation(value = "Send Danger zone", tags = "Metrics")
     @RequestMapping(value = "/registerDangerZone", method = RequestMethod.POST ,consumes="application/json")
-    public void registerDangerZone(@RequestBody List<Zone> signalStrengths) {
+    public SimpleResponse registerDangerZone(@RequestBody List<Zone> signalStrengths) {
         System.out.println("Saving danger zone with signal strength list:");
         String zoneId = UUID.randomUUID().toString();
         for (Zone zone: signalStrengths ) {
             try {
-                System.out.println(zone.toString());
+                User user = zone.getUser();
+                User userFromDB = userRepository.findByUsername(user.getUsername());
+                if(userFromDB==null || userFromDB.getUsername()==null)
+                    zone.setUser(userRepository.save(user));
+                else
+                    zone.setUser(userFromDB);
                 Wifi wifi = zone.getWifi();
                 Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
                 if(wifiFromDB==null || wifiFromDB.getMacAddress()==null)
-                    wifiRepository.save(wifi);
+                    zone.setWifi(wifiRepository.save(wifi));
                 else
                     zone.setWifi(wifiFromDB);
                 zone.setZoneId(zoneId);
                 zoneRepository.save(zone);
             } catch (Exception ex) {
                 System.out.println("Error creating the zone: " + ex.toString());
+                return new SimpleResponse("Error creating the zone: " + ex.toString());
             }
         }
         System.out.println("Danger Zone succesfully created with id = " + zoneId);
+        return new SimpleResponse("Danger Zone succesfully created with id = " + zoneId);
     }
 
     @ApiOperation(value = "Send Safe zone", tags = "Metrics")

@@ -4,6 +4,7 @@ import gr.uoa.di.entities.User;
 import gr.uoa.di.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -15,7 +16,8 @@ public class AuthorizationController {
 
 
     @ApiOperation(value = "Registers user with give username,name,surname & password", tags = "Authorization")
-    @RequestMapping(value = "/register/{username}/{name}/{surname}/{password}", method = RequestMethod.GET )
+    @RequestMapping(value = "/register/{username}/{name}/{surname}/{password}", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE )
+
     public String register(@PathVariable(value="username") String username, @PathVariable(value="name") String name, @PathVariable(value="surname") String surname, @PathVariable(value="password") String password) {
         String userId = "";
         try {
@@ -24,7 +26,7 @@ public class AuthorizationController {
             userId = String.valueOf(user.getId());
         }
         catch (Exception ex) {
-            return "Error creating the user: " + ex.toString();
+            return  "Error creating the user: " + ex.toString();
         }
         return "User succesfully created with id = " + userId;
     }
