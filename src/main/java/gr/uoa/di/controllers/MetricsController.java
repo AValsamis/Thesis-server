@@ -48,6 +48,7 @@ public class MetricsController {
         System.out.println("Saving danger zone with signal strength list:");
         String zoneId = UUID.randomUUID().toString();
         for (Zone zone: signalStrengths ) {
+            System.out.println(zone.toString());
             try {
                 User user = zone.getUser();
                 User userFromDB = userRepository.findByUsername(user.getUsername());
@@ -65,6 +66,7 @@ public class MetricsController {
                 zoneRepository.save(zone);
             } catch (Exception ex) {
                 System.out.println("Error creating the zone: " + ex.toString());
+                ex.printStackTrace();
                 return new SimpleResponse("Error creating the zone: " + ex.toString());
             }
         }
