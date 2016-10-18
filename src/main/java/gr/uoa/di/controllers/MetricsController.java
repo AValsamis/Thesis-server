@@ -76,18 +76,34 @@ public class MetricsController {
 
     @ApiOperation(value = "Send Safe zone", tags = "Metrics")
     @RequestMapping(value = "/registerSafeZone", method = RequestMethod.POST ,consumes="application/json")
-    public void registerSafeZone(@RequestParam(value="Signal Strength List") List<Zone> signalStrengths) {
+    public SimpleResponse registerSafeZone(@RequestBody List<Zone> signalStrengths) {
         System.out.println("Saving safe zone with signal strength list:");
         String zoneId = UUID.randomUUID().toString();
         for (Zone zone: signalStrengths ) {
+            System.out.println(zone.toString());
             try {
+                User user = zone.getUser();
+                User userFromDB = userRepository.findByUsername(user.getUsername());
+                if(userFromDB==null || userFromDB.getUsername()==null)
+                    zone.setUser(userRepository.save(user));
+                else
+                    zone.setUser(userFromDB);
+                Wifi wifi = zone.getWifi();
+                Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
+                if(wifiFromDB==null || wifiFromDB.getMacAddress()==null)
+                    zone.setWifi(wifiRepository.save(wifi));
+                else
+                    zone.setWifi(wifiFromDB);
                 zone.setZoneId(zoneId);
                 zoneRepository.save(zone);
             } catch (Exception ex) {
                 System.out.println("Error creating the zone: " + ex.toString());
+                ex.printStackTrace();
+                return new SimpleResponse("Error creating the zone: " + ex.toString());
             }
         }
         System.out.println("Safe Zone succesfully created with id = " + zoneId);
+        return new SimpleResponse("Safe Zone succesfully created with id = " + zoneId);
     }
 
     @ApiOperation(value = "Send if user is in danger zone", tags = "Metrics")

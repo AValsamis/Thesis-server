@@ -21,6 +21,7 @@ public class Zone {
     @ManyToOne
     @JoinColumn(name = "userId")
     private User user;
+    private Integer isSafe;
 
     public Zone(){}
 
@@ -62,13 +63,23 @@ public class Zone {
         this.user = user;
     }
 
+    public Integer getIsSafe() {
+        return isSafe;
+    }
+
+    public void setIsSafe(Integer isSafe) {
+        this.isSafe = isSafe;
+    }
+
     @Override
     public String toString() {
         return "Zone{" +
-                "zoneId=" + zoneId +
+                "Id=" + Id +
+                ", zoneId='" + zoneId + '\'' +
                 ", wifi=" + wifi +
                 ", signalStrength=" + signalStrength +
                 ", user=" + user +
+                ", isSafe=" + isSafe +
                 '}';
     }
 }
