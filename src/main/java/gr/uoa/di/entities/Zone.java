@@ -14,6 +14,7 @@ public class Zone {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long Id;
     private String zoneId;
+    private String friendlyName;
     @ManyToOne
     @JoinColumn(name = "wifiId")
     private Wifi wifi;
@@ -71,11 +72,20 @@ public class Zone {
         this.isSafe = isSafe;
     }
 
+    public String getFriendlyName() {
+        return friendlyName;
+    }
+
+    public void setFriendlyName(String friendlyName) {
+        this.friendlyName = friendlyName;
+    }
+
     @Override
     public String toString() {
         return "Zone{" +
                 "Id=" + Id +
                 ", zoneId='" + zoneId + '\'' +
+                ", friendlyName='" + friendlyName + '\'' +
                 ", wifi=" + wifi +
                 ", signalStrength=" + signalStrength +
                 ", user=" + user +

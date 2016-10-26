@@ -8,8 +8,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Angelos on 9/18/2016.
@@ -48,7 +48,6 @@ public class MetricsController {
         System.out.println("Saving danger zone with signal strength list:");
         String zoneId = UUID.randomUUID().toString();
         for (Zone zone: signalStrengths ) {
-            System.out.println(zone.toString());
             try {
                 User user = zone.getUser();
                 User userFromDB = userRepository.findByUsername(user.getUsername());
@@ -70,7 +69,6 @@ public class MetricsController {
                 return new SimpleResponse("Error creating the zone: " + ex.toString());
             }
         }
-        System.out.println("Danger Zone succesfully created with id = " + zoneId);
         return new SimpleResponse("Danger Zone succesfully created with id = " + zoneId);
     }
 
@@ -104,6 +102,68 @@ public class MetricsController {
         }
         System.out.println("Safe Zone succesfully created with id = " + zoneId);
         return new SimpleResponse("Safe Zone succesfully created with id = " + zoneId);
+    }
+
+    @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
+    @RequestMapping(value = "/getZone", method = RequestMethod.POST, consumes="application/json")
+    public String getZone(@RequestBody List<Zone> signalStrengths) {
+
+        System.out.println("SENT LIST OF ZONES: " + Arrays.asList(signalStrengths));
+        List<String> closestZones = new ArrayList<>();
+        for(Zone zone : signalStrengths)
+        {
+            Wifi wifi = zone.getWifi();
+            Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
+            Double min = Double.MAX_VALUE;
+            Double closest = zone.getSignalStrength();
+            int closestPosition;
+            String closestByName = "";
+            if(wifiFromDB!=null)
+            {
+                Zone[] zonesFromDB = zoneRepository.findZonesByWifiId(wifiFromDB);
+                System.out.println("TEST: " + Arrays.asList(zonesFromDB));
+                for(int i = 0; i < zonesFromDB.length; i++)
+                {
+                    System.out.println("Searching for wifi: " + zonesFromDB[i].getWifi().getName());
+                    final Double diff = Math.abs(zonesFromDB[i].getSignalStrength() - zone.getSignalStrength());
+
+                    if (diff < min) {
+                        min = diff;
+                        closest = zonesFromDB[i].getSignalStrength();
+                        closestByName = zonesFromDB[i].getFriendlyName();
+                        closestPosition = i;
+                    }
+
+                }
+                System.out.println("Closest zone is: " + closestByName);
+                closestZones.add(closestByName);
+            }
+        }
+        Map<String, Long> counts =
+                closestZones.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        System.out.println(counts);
+
+        closestZones.sort(String::compareToIgnoreCase);
+        String currentMax = "";
+        int maxCount = 0;
+        String current = "";
+        int count = 0;
+        for(int i = 0; i < closestZones.size(); i++) {
+            String item = closestZones.get(i);
+            if(item.equals(current)) {
+                count++;
+            }
+            else {
+                if(count > maxCount) {
+                    maxCount = count;
+                    currentMax = current;
+                }
+                count = 1;
+                current = item;
+            }
+        }
+
+        return currentMax;
     }
 
     @ApiOperation(value = "Send if user is in danger zone", tags = "Metrics")
