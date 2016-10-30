@@ -1,6 +1,7 @@
 package gr.uoa.di.entities;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 
 /**
  * Created by Sevle on 9/23/2016.
@@ -17,7 +18,7 @@ public class Wifi {
     private String macAddress;
     private String name;
     @Transient
-    private Integer signalStrength;
+    private ArrayList<Double> signalStrength;
 
     public Wifi() {
     }
@@ -51,19 +52,21 @@ public class Wifi {
         this.name = name;
     }
 
-    public Integer getSignalStrength() {
+    public ArrayList<Double> getSignalStrength() {
         return signalStrength;
     }
 
-    public void setSignalStrength(Integer signalStrength) {
+    public void setSignalStrength(ArrayList<Double> signalStrength) {
         this.signalStrength = signalStrength;
     }
 
     @Override
     public String toString() {
         return "Wifi{" +
-                "MacAddress='" + macAddress + '\'' +
+                "wifiId=" + wifiId +
+                ", macAddress='" + macAddress + '\'' +
                 ", name='" + name + '\'' +
+                ", signalStrength=" + signalStrength +
                 '}';
     }
 }

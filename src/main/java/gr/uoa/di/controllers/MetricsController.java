@@ -47,7 +47,7 @@ public class MetricsController {
     }
 
     @ApiOperation(value = "Send Danger zone", tags = "Metrics")
-    @RequestMapping(value = "/registerZone", method = RequestMethod.POST )//,consumes="application/json")
+    @RequestMapping(value = "/registerZone", method = RequestMethod.POST )
     public SimpleResponse registerZone(@RequestPart(name="wifi") List<Wifi> wifis, @RequestPart(name="zone")Zone zone) throws IOException {
         System.out.println("Saving zone with signal strength list:");
 
@@ -65,13 +65,12 @@ public class MetricsController {
         else
             return new SimpleResponse("Name " + zone.getFriendlyName() + " already assigned to a zone. Please try another name", false);
 
-            // do nothing (or throw exception here?)
         for (Wifi wifi: wifis ) {
             try {
-                Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
+                Wifi wifiFromDB = wifiRepository.findByName(wifi.getName());
                 Wifi wifi1 = null;
                 WifiInZone wifiInZone = new WifiInZone();
-                if(wifiFromDB==null || wifiFromDB.getMacAddress()==null) {
+                if(wifiFromDB==null || wifiFromDB.getName()==null) {
                     wifi1 = wifiRepository.save(wifi);
                     wifiInZone.setWifi(wifi1);
                 }
@@ -79,8 +78,18 @@ public class MetricsController {
                     wifiInZone.setWifi(wifiFromDB);
                 }
                 wifiInZone.setZone(zone1);
-                wifiInZone.setSignalStrength(wifi.getSignalStrength());
-                wifiInZoneRepository.save(wifiInZone);
+
+                Double signalStrengthSum = 0.0;
+                for(int i = 0; i < wifi.getSignalStrength().size(); i++)
+                {
+                    signalStrengthSum += wifi.getSignalStrength().get(i);
+                }
+                Double signalStrength = (signalStrengthSum/wifi.getSignalStrength().size());
+                // TODO ???
+                if(signalStrength > -80.0) {
+                    wifiInZone.setSignalStrength(signalStrength);
+                    wifiInZoneRepository.save(wifiInZone);
+                }
             } catch (Exception ex) {
                 System.out.println("Error creating the zone: " + ex.toString());
                 ex.printStackTrace();
@@ -99,10 +108,21 @@ public class MetricsController {
         List<String> closestZones = new ArrayList<>();
         for(Wifi wifi : wifis)
         {
-            Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
-            Integer min = Integer.MAX_VALUE;
-            Integer closest = wifi.getSignalStrength();
-            int closestPosition;
+            Wifi wifiFromDB = wifiRepository.findByName(wifi.getName());
+            Double min = Double.MAX_VALUE;
+            Double signalStrengthSum = 0.0;
+            for(int i = 0; i < wifi.getSignalStrength().size(); i++)
+            {
+                signalStrengthSum += wifi.getSignalStrength().get(i);
+            }
+            Double closest = (signalStrengthSum/wifi.getSignalStrength().size());
+            System.out.println("Wifi name: " + wifi.getName() + " ss: " + closest);
+            // TODO ???
+            if(closest <= -80.0)
+            {
+                System.out.println("Bypassing wifi: " + wifi.getName() + "...");
+                continue;
+            }
             String closestByName = "";
             if(wifiFromDB!=null)
             {
@@ -110,14 +130,12 @@ public class MetricsController {
                 System.out.println("TEST: " + Arrays.asList(wifiInZones));
                 for(int i = 0; i < wifiInZones.length; i++)
                 {
-                    System.out.println("Searching for wifi: " + wifiInZones[i].getWifi().getName());
-                    final Integer diff = Math.abs(wifiInZones[i].getSignalStrength() - wifi.getSignalStrength());
-
+                    System.out.println("Searching for wifi: " + wifiInZones[i].getWifi().getName() + " ss from db in zone: " + wifiInZones[i].getZone().getFriendlyName() + " is : " +wifiInZones[i].getSignalStrength());
+                    final Double diff = Math.abs(wifiInZones[i].getSignalStrength() - closest);
+                    System.out.println("diff for zone " + wifiInZones[i].getZone().getFriendlyName() + " is: " + diff);
                     if (diff < min) {
                         min = diff;
-                        closest = wifiInZones[i].getSignalStrength();
                         closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[i].getZone().getZoneId());
-                        closestPosition = i;
                     }
 
                 }

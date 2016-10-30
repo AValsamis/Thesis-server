@@ -16,7 +16,7 @@ public class WifiInZone implements Serializable {
     @ManyToOne
     @JoinColumn(name = "zoneId")
     private Zone zone;
-    private Integer signalStrength;
+    private Double signalStrength;
 
     public Wifi getWifi() {
         return wifi;
@@ -34,11 +34,11 @@ public class WifiInZone implements Serializable {
         this.zone = zone;
     }
 
-    public Integer getSignalStrength() {
+    public Double getSignalStrength() {
         return signalStrength;
     }
 
-    public void setSignalStrength(Integer signalStrength) {
+    public void setSignalStrength(Double signalStrength) {
         this.signalStrength = signalStrength;
     }
 
