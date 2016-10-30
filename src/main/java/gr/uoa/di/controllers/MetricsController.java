@@ -2,12 +2,14 @@ package gr.uoa.di.controllers;
 
 import gr.uoa.di.entities.*;
 import gr.uoa.di.repository.UserRepository;
+import gr.uoa.di.repository.WifiInZoneRepository;
 import gr.uoa.di.repository.WifiRepository;
 import gr.uoa.di.repository.ZoneRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,8 @@ public class MetricsController {
     private WifiRepository wifiRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private WifiInZoneRepository wifiInZoneRepository;
 
     private static final int maximum = 360;
     private static final int minimum = 0;
@@ -43,94 +47,76 @@ public class MetricsController {
     }
 
     @ApiOperation(value = "Send Danger zone", tags = "Metrics")
-    @RequestMapping(value = "/registerDangerZone", method = RequestMethod.POST ,consumes="application/json")
-    public SimpleResponse registerDangerZone(@RequestBody List<Zone> signalStrengths) {
-        System.out.println("Saving danger zone with signal strength list:");
-        String zoneId = UUID.randomUUID().toString();
-        for (Zone zone: signalStrengths ) {
+    @RequestMapping(value = "/registerZone", method = RequestMethod.POST )//,consumes="application/json")
+    public SimpleResponse registerZone(@RequestPart(name="wifi") List<Wifi> wifis, @RequestPart(name="zone")Zone zone) throws IOException {
+        System.out.println("Saving zone with signal strength list:");
+
+        User user = zone.getUser();
+        User userFromDB = userRepository.findByUsername(user.getUsername());
+        if(userFromDB==null || userFromDB.getUsername()==null)
+            userRepository.save(user);
+        else{
+            zone.setUser(userFromDB);
+        }
+        Zone zone1 = null;
+        Zone zoneFromDB = zoneRepository.findByFriendlyName(zone.getFriendlyName());
+        if(zoneFromDB==null || zoneFromDB.getFriendlyName()==null)
+            zone1 = zoneRepository.save(zone);
+        else
+            return new SimpleResponse("Name " + zone.getFriendlyName() + " already assigned to a zone. Please try another name", false);
+
+            // do nothing (or throw exception here?)
+        for (Wifi wifi: wifis ) {
             try {
-                User user = zone.getUser();
-                User userFromDB = userRepository.findByUsername(user.getUsername());
-                if(userFromDB==null || userFromDB.getUsername()==null)
-                    zone.setUser(userRepository.save(user));
-                else
-                    zone.setUser(userFromDB);
-                Wifi wifi = zone.getWifi();
                 Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
-                if(wifiFromDB==null || wifiFromDB.getMacAddress()==null)
-                    zone.setWifi(wifiRepository.save(wifi));
-                else
-                    zone.setWifi(wifiFromDB);
-                zone.setZoneId(zoneId);
-                zoneRepository.save(zone);
+                Wifi wifi1 = null;
+                WifiInZone wifiInZone = new WifiInZone();
+                if(wifiFromDB==null || wifiFromDB.getMacAddress()==null) {
+                    wifi1 = wifiRepository.save(wifi);
+                    wifiInZone.setWifi(wifi1);
+                }
+                else {
+                    wifiInZone.setWifi(wifiFromDB);
+                }
+                wifiInZone.setZone(zone1);
+                wifiInZone.setSignalStrength(wifi.getSignalStrength());
+                wifiInZoneRepository.save(wifiInZone);
             } catch (Exception ex) {
                 System.out.println("Error creating the zone: " + ex.toString());
                 ex.printStackTrace();
-                return new SimpleResponse("Error creating the zone: " + ex.toString());
+                return new SimpleResponse("Error creating the zone: " + ex.toString(),false);
             }
         }
-        return new SimpleResponse("Danger Zone succesfully created with id = " + zoneId);
+        return new SimpleResponse("Zone succesfully created with id = " + zone1.getZoneId() + " and name = " + zone1.getFriendlyName(),true);
     }
 
-    @ApiOperation(value = "Send Safe zone", tags = "Metrics")
-    @RequestMapping(value = "/registerSafeZone", method = RequestMethod.POST ,consumes="application/json")
-    public SimpleResponse registerSafeZone(@RequestBody List<Zone> signalStrengths) {
-        System.out.println("Saving safe zone with signal strength list:");
-        String zoneId = UUID.randomUUID().toString();
-        for (Zone zone: signalStrengths ) {
-            System.out.println(zone.toString());
-            try {
-                User user = zone.getUser();
-                User userFromDB = userRepository.findByUsername(user.getUsername());
-                if(userFromDB==null || userFromDB.getUsername()==null)
-                    zone.setUser(userRepository.save(user));
-                else
-                    zone.setUser(userFromDB);
-                Wifi wifi = zone.getWifi();
-                Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
-                if(wifiFromDB==null || wifiFromDB.getMacAddress()==null)
-                    zone.setWifi(wifiRepository.save(wifi));
-                else
-                    zone.setWifi(wifiFromDB);
-                zone.setZoneId(zoneId);
-                zoneRepository.save(zone);
-            } catch (Exception ex) {
-                System.out.println("Error creating the zone: " + ex.toString());
-                ex.printStackTrace();
-                return new SimpleResponse("Error creating the zone: " + ex.toString());
-            }
-        }
-        System.out.println("Safe Zone succesfully created with id = " + zoneId);
-        return new SimpleResponse("Safe Zone succesfully created with id = " + zoneId);
-    }
 
     @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
     @RequestMapping(value = "/getZone", method = RequestMethod.POST, consumes="application/json")
-    public String getZone(@RequestBody List<Zone> signalStrengths) {
+    public String getZone(@RequestBody List<Wifi> wifis) {
 
-        System.out.println("SENT LIST OF ZONES: " + Arrays.asList(signalStrengths));
+        System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
         List<String> closestZones = new ArrayList<>();
-        for(Zone zone : signalStrengths)
+        for(Wifi wifi : wifis)
         {
-            Wifi wifi = zone.getWifi();
             Wifi wifiFromDB = wifiRepository.findByMacAddress(wifi.getMacAddress());
-            Double min = Double.MAX_VALUE;
-            Double closest = zone.getSignalStrength();
+            Integer min = Integer.MAX_VALUE;
+            Integer closest = wifi.getSignalStrength();
             int closestPosition;
             String closestByName = "";
             if(wifiFromDB!=null)
             {
-                Zone[] zonesFromDB = zoneRepository.findZonesByWifiId(wifiFromDB);
-                System.out.println("TEST: " + Arrays.asList(zonesFromDB));
-                for(int i = 0; i < zonesFromDB.length; i++)
+                WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB);
+                System.out.println("TEST: " + Arrays.asList(wifiInZones));
+                for(int i = 0; i < wifiInZones.length; i++)
                 {
-                    System.out.println("Searching for wifi: " + zonesFromDB[i].getWifi().getName());
-                    final Double diff = Math.abs(zonesFromDB[i].getSignalStrength() - zone.getSignalStrength());
+                    System.out.println("Searching for wifi: " + wifiInZones[i].getWifi().getName());
+                    final Integer diff = Math.abs(wifiInZones[i].getSignalStrength() - wifi.getSignalStrength());
 
                     if (diff < min) {
                         min = diff;
-                        closest = zonesFromDB[i].getSignalStrength();
-                        closestByName = zonesFromDB[i].getFriendlyName();
+                        closest = wifiInZones[i].getSignalStrength();
+                        closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[i].getZone().getZoneId());
                         closestPosition = i;
                     }
 

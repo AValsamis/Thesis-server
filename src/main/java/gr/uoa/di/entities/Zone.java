@@ -12,13 +12,9 @@ public class Zone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long Id;
-    private String zoneId;
+    private Long zoneId;
+//    private String zoneId;
     private String friendlyName;
-    @ManyToOne
-    @JoinColumn(name = "wifiId")
-    private Wifi wifi;
-    private Double signalStrength;
     @ManyToOne
     @JoinColumn(name = "userId")
     private User user;
@@ -26,35 +22,39 @@ public class Zone {
 
     public Zone(){}
 
-    public Zone(Wifi wifi, Double signalStrength, User user) {
-        this.wifi = wifi;
-        this.signalStrength = signalStrength;
-        this.user = user;
-    }
-
-    public String getZoneId() {
+    public Long getZoneId() {
         return zoneId;
     }
 
-    public void setZoneId(String zoneId) {
-        this.zoneId = zoneId;
-    }
+    //    public Zone(Wifi wifi, Double signalStrength, User user) {
+//        this.wifi = wifi;
+//        this.signalStrength = signalStrength;
+//        this.user = user;
+//    }
 
-    public Wifi getWifi() {
-        return wifi;
-    }
+//    public String getZoneId() {
+//        return zoneId;
+//    }
+//
+//    public void setZoneId(String zoneId) {
+//        this.zoneId = zoneId;
+//    }
 
-    public void setWifi(Wifi wifi) {
-        this.wifi = wifi;
-    }
-
-    public Double getSignalStrength() {
-        return signalStrength;
-    }
-
-    public void setSignalStrength(Double signalStrength) {
-        this.signalStrength = signalStrength;
-    }
+//    public Wifi getWifi() {
+//        return wifi;
+//    }
+//
+//    public void setWifi(Wifi wifi) {
+//        this.wifi = wifi;
+//    }
+//
+//    public Double getSignalStrength() {
+//        return signalStrength;
+//    }
+//
+//    public void setSignalStrength(Double signalStrength) {
+//        this.signalStrength = signalStrength;
+//    }
 
     public User getUser() {
         return user;
@@ -83,11 +83,11 @@ public class Zone {
     @Override
     public String toString() {
         return "Zone{" +
-                "Id=" + Id +
-                ", zoneId='" + zoneId + '\'' +
+                "zoneId=" + zoneId +
+//                ", zoneId='" + zoneId + '\'' +
                 ", friendlyName='" + friendlyName + '\'' +
-                ", wifi=" + wifi +
-                ", signalStrength=" + signalStrength +
+//                ", wifi=" + wifi +
+//                ", signalStrength=" + signalStrength +
                 ", user=" + user +
                 ", isSafe=" + isSafe +
                 '}';

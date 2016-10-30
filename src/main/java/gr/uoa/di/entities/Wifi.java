@@ -16,6 +16,8 @@ public class Wifi {
     @Column(unique=true)
     private String macAddress;
     private String name;
+    @Transient
+    private Integer signalStrength;
 
     public Wifi() {
     }
@@ -47,6 +49,14 @@ public class Wifi {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getSignalStrength() {
+        return signalStrength;
+    }
+
+    public void setSignalStrength(Integer signalStrength) {
+        this.signalStrength = signalStrength;
     }
 
     @Override

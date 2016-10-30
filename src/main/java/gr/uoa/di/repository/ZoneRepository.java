@@ -15,8 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ZoneRepository extends CrudRepository<Zone,Long> {
 
-    public Zone findByZoneId(String zoneId);
-    @Query("select z from Zone z where z.wifi = :wifi")
-    public Zone[] findZonesByWifiId(@Param("wifi") Wifi wifi);
+//    public Zone findById(Long Id);
+    public Zone findByFriendlyName(String friendlyName);
+    @Query("select z.friendlyName from Zone z where z.zoneId = :zone_id")
+    public String findFrienldyNameByZoneId(@Param("zone_id")Long zoneId);
+//    @Query("select z from Zone z where z.wifi = :wifi")
+//    public Zone[] findZonesByWifiId(@Param("wifi") Wifi wifi);
 
 }
