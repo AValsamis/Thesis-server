@@ -1,10 +1,7 @@
 package gr.uoa.di.controllers;
 
 import gr.uoa.di.entities.*;
-import gr.uoa.di.repository.UserRepository;
-import gr.uoa.di.repository.WifiInZoneRepository;
-import gr.uoa.di.repository.WifiRepository;
-import gr.uoa.di.repository.ZoneRepository;
+import gr.uoa.di.repository.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +24,10 @@ public class MetricsController {
     private UserRepository userRepository;
     @Autowired
     private WifiInZoneRepository wifiInZoneRepository;
+    @Autowired
+    private AccelerometerStatsRepository accelerometerStatsRepository;
+    @Autowired
+    private OrientationStatsRepository orientationStatsRepository;
 
     private static final int maximum = 360;
     private static final int minimum = 0;
@@ -177,5 +178,44 @@ public class MetricsController {
         return true;
     }
 
+    @ApiOperation(value = "Send Data Packet", tags = "Metrics")
+    @RequestMapping(value = "/sendDataPacket", method = RequestMethod.POST, consumes="application/json")
+    public SimpleResponse sendDataPacket(@RequestBody DataPacket dataPacket) throws IOException {
+        //check if user is in danger zone and send true if he is/false otherwise
+
+        System.out.println("Putting data from packet in DB for user: " + dataPacket.getUser().getUsername());
+
+        ArrayList<AccelerometerStats> accelerometerStats = dataPacket.getAccelerometerStats();
+        ArrayList<OrientationStats> orientationStats = dataPacket.getOrientationStats();
+
+
+        for(AccelerometerStats accelerometerStats1 : accelerometerStats)
+        {
+            User userFromDB = userRepository.findByUsername(dataPacket.getUser().getUsername());
+            if(userFromDB==null || userFromDB.getUsername()==null)
+                userRepository.save(dataPacket.getUser());
+            else{
+                accelerometerStats1.setUser(userFromDB);
+            }
+
+            accelerometerStats1.setUser(userFromDB);
+            accelerometerStatsRepository.save(accelerometerStats1);
+        }
+        for(OrientationStats orientationStats1 : orientationStats)
+        {
+            User userFromDB = userRepository.findByUsername(dataPacket.getUser().getUsername());
+            if(userFromDB==null || userFromDB.getUsername()==null)
+                userRepository.save(dataPacket.getUser());
+            else{
+                orientationStats1.setUser(userFromDB);
+            }
+
+            orientationStats1.setUser(userFromDB);
+            orientationStatsRepository.save(orientationStats1);
+        }
+
+        System.out.println(dataPacket.toString());
+        return new SimpleResponse("Invoked with: " + dataPacket.toString(),true);
+    }
 
 }

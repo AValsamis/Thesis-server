@@ -3,11 +3,12 @@ package gr.uoa.di.entities;
 import javax.persistence.*;
 
 /**
- * Created by Angelos on 6/19/2016.
+ * Created by skand on 11/21/2016.
  */
+
 @Entity
-@Table(name = "accelerometerStats")
-public class AccelerometerStats {
+@Table(name = "orientationStats")
+public class OrientationStats {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,54 +18,54 @@ public class AccelerometerStats {
     private User user;
 
     private String timeStamp;
-    private String x;
-    private String y;
-    private String z;
+    private String azimut;
+    private String pitch;
+    private String roll;
 
-    public AccelerometerStats() {
+    public OrientationStats() {
     }
 
-    public AccelerometerStats(String x, String y, String z, String timeStamp) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public OrientationStats(String azimut, String pitch, String roll, String timeStamp) {
+        this.azimut = azimut;
+        this.pitch = pitch;
+        this.roll = roll;
         this.timeStamp = timeStamp;
     }
 
     @Override
     public String toString() {
-        return "AccelerometerStats{" +
+        return "OrientationStats{" +
                 "id=" + id +
                 ", user=" + user +
                 ", timeStamp='" + timeStamp + '\'' +
-                ", x='" + x + '\'' +
-                ", y='" + y + '\'' +
-                ", z='" + z + '\'' +
+                ", azimut='" + azimut + '\'' +
+                ", pitch='" + pitch + '\'' +
+                ", roll='" + roll + '\'' +
                 '}';
     }
 
-    public String getX() {
-        return x;
+    public String getAzimut() {
+        return azimut;
     }
 
-    public void setX(String x) {
-        this.x = x;
+    public void setAzimut(String azimut) {
+        this.azimut = azimut;
     }
 
-    public String getY() {
-        return y;
+    public String getPitch() {
+        return pitch;
     }
 
-    public void setY(String y) {
-        this.y = y;
+    public void setPitch(String pitch) {
+        this.pitch = pitch;
     }
 
-    public String getZ() {
-        return z;
+    public String getRoll() {
+        return roll;
     }
 
-    public void setZ(String z) {
-        this.z = z;
+    public void setRoll(String roll) {
+        this.roll = roll;
     }
 
     public Long getId() {
@@ -90,4 +91,5 @@ public class AccelerometerStats {
     public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
     }
+
 }
