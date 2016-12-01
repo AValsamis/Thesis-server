@@ -4,6 +4,8 @@ import gr.uoa.di.entities.*;
 import gr.uoa.di.repository.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -24,10 +26,12 @@ public class MetricsController {
     private UserRepository userRepository;
     @Autowired
     private WifiInZoneRepository wifiInZoneRepository;
+
     @Autowired
     private AccelerometerStatsRepository accelerometerStatsRepository;
     @Autowired
     private OrientationStatsRepository orientationStatsRepository;
+
 
     private static final int maximum = 360;
     private static final int minimum = 0;
@@ -178,6 +182,23 @@ public class MetricsController {
         return true;
     }
 
+    @ApiOperation(value = "Send safe zones of user", tags = "Metrics")
+    @RequestMapping(value = "/safeZones/{user}", method = RequestMethod.GET ,produces="application/json")
+    public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") Long user) {
+        List<Zone> zones = zoneRepository.findUserSafeZones(user);
+        return  new ResponseEntity<List<Zone>>(zones, HttpStatus.OK);
+
+    }
+
+    @ApiOperation(value = "Send danger zones of user", tags = "Metrics")
+    @RequestMapping(value = "/dangerZones/{user}", method = RequestMethod.GET ,produces="application/json")
+    public ResponseEntity<List<Zone>> dangerZonesForUser(@PathVariable(value="user") Long user) {
+        List<Zone> zones = zoneRepository.findUserDangerZones(user);
+        zones.forEach(System.out::println);
+
+        return  new ResponseEntity<List<Zone>>(zones, HttpStatus.OK);
+
+    }
     @ApiOperation(value = "Send Data Packet", tags = "Metrics")
     @RequestMapping(value = "/sendDataPacket", method = RequestMethod.POST, consumes="application/json")
     public SimpleResponse sendDataPacket(@RequestBody DataPacket dataPacket) throws IOException {
