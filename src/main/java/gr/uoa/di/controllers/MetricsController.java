@@ -38,17 +38,17 @@ public class MetricsController {
 
     @ApiOperation(value = "Dummy getter of single accelerometer Metrics", tags = "Metrics")
     @RequestMapping(value = "/accelerometerInstance", method = RequestMethod.GET)
-        public AccelerometerStats accelerometerGetLast() {
+    public AccelerometerStats accelerometerGetLast() {
 
-            AccelerometerStats accelerometerStats = new AccelerometerStats();
-            Integer randomNum = minimum + (int)(Math.random() * maximum);
-            accelerometerStats.setX(randomNum.toString());
-            randomNum = minimum + (int)(Math.random() * maximum);
-            accelerometerStats.setY(randomNum.toString());
-            randomNum = minimum + (int)(Math.random() * maximum);
-            accelerometerStats.setZ(randomNum.toString());
+        AccelerometerStats accelerometerStats = new AccelerometerStats();
+        Integer randomNum = minimum + (int)(Math.random() * maximum);
+        accelerometerStats.setX(randomNum.toString());
+        randomNum = minimum + (int)(Math.random() * maximum);
+        accelerometerStats.setY(randomNum.toString());
+        randomNum = minimum + (int)(Math.random() * maximum);
+        accelerometerStats.setZ(randomNum.toString());
 
-            return accelerometerStats;
+        return accelerometerStats;
     }
 
     @ApiOperation(value = "Send Danger zone", tags = "Metrics")
@@ -107,7 +107,7 @@ public class MetricsController {
 
     @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
     @RequestMapping(value = "/getZone", method = RequestMethod.POST, consumes="application/json")
-    public String getZone(@RequestBody List<Wifi> wifis) {
+    public SimpleResponse getZone(@RequestBody List<Wifi> wifis) {
 
         System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
         List<String> closestZones = new ArrayList<>();
@@ -129,6 +129,7 @@ public class MetricsController {
                 continue;
             }
             String closestByName = "";
+            int finalmin = -1;
             if(wifiFromDB!=null)
             {
                 WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB);
@@ -140,39 +141,48 @@ public class MetricsController {
                     System.out.println("diff for zone " + wifiInZones[i].getZone().getFriendlyName() + " is: " + diff);
                     if (diff < min) {
                         min = diff;
-                        closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[i].getZone().getZoneId());
+                        if(min <= 5.0)
+                        {
+                            finalmin = i;
+                        }
                     }
-
                 }
-                System.out.println("Closest zone is: " + closestByName);
-                closestZones.add(closestByName);
+                if(finalmin != -1) {
+                    closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[finalmin].getZone().getZoneId());
+                    System.out.println("Closest zone is: " + closestByName);
+                    closestZones.add(closestByName);
+
+                    for(int i = 0; i < wifiInZones.length; i++)
+                    {
+                        if (i==finalmin) continue;
+                        final Double diff = Math.abs(wifiInZones[i].getSignalStrength() - closest);
+                        if (diff - min <= 1.5) {
+                            System.out.println("I ve also added "+wifiInZones[i].getZone().getFriendlyName() +" as closest");
+                            closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[i].getZone().getZoneId());
+                            closestZones.add(closestByName);
+                        }
+                    }
+                }
+                else
+                    System.out.println("Wifi " + wifi.getName() + " not counted!");
+
             }
         }
         Map<String, Long> counts =
                 closestZones.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
         System.out.println(counts);
 
-        closestZones.sort(String::compareToIgnoreCase);
-        String currentMax = "";
-        int maxCount = 0;
-        String current = "";
-        int count = 0;
-        for(int i = 0; i < closestZones.size(); i++) {
-            String item = closestZones.get(i);
-            if(item.equals(current)) {
-                count++;
-            }
-            else {
-                if(count > maxCount) {
-                    maxCount = count;
-                    currentMax = current;
-                }
-                count = 1;
-                current = item;
+        Long maxCount =  Collections.max(counts.values());
+        System.out.println(maxCount);
+
+        for (Object o : counts.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            if (pair.getValue() == maxCount){
+                System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
+                return new SimpleResponse(pair.getKey().toString());
             }
         }
-
-        return currentMax;
+        return null;
     }
 
     @ApiOperation(value = "Send if user is in danger zone", tags = "Metrics")
@@ -184,7 +194,7 @@ public class MetricsController {
 
     @ApiOperation(value = "Send safe zones of user", tags = "Metrics")
     @RequestMapping(value = "/safeZones/{user}", method = RequestMethod.GET ,produces="application/json")
-    public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") Long user) {
+    public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") String user) {
         List<Zone> zones = zoneRepository.findUserSafeZones(user);
         return  new ResponseEntity<List<Zone>>(zones, HttpStatus.OK);
 
@@ -192,7 +202,7 @@ public class MetricsController {
 
     @ApiOperation(value = "Send danger zones of user", tags = "Metrics")
     @RequestMapping(value = "/dangerZones/{user}", method = RequestMethod.GET ,produces="application/json")
-    public ResponseEntity<List<Zone>> dangerZonesForUser(@PathVariable(value="user") Long user) {
+    public ResponseEntity<List<Zone>> dangerZonesForUser(@PathVariable(value="user") String user) {
         List<Zone> zones = zoneRepository.findUserDangerZones(user);
         zones.forEach(System.out::println);
 
