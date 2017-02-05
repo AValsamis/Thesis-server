@@ -1,44 +1,70 @@
-package gr.uoa.di;
+package gr.uoa.di.controllers;
 
 import gr.uoa.di.entities.AccelerometerStats;
+import gr.uoa.di.entities.SimpleResponse;
 import gr.uoa.di.entities.User;
+import gr.uoa.di.entities.Zone;
 import gr.uoa.di.repository.AccelerometerStatsRepository;
-import gr.uoa.di.repository.WifiInZoneRepository;
+import gr.uoa.di.repository.ElderlyResponsibleRepository;
+import gr.uoa.di.repository.UserRepository;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-public class FallDetection {
+/**
+ * Created by skand on 2/5/2017.
+ */
 
+@RestController
+public class FallDetectionController {
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ElderlyResponsibleRepository elderlyResponsibleRepository;
+
+    @Autowired
+    private AccelerometerStatsRepository accelerometerStatsRepository;
+    private static List<AccelerometerStats> accelerometerDatas = new LinkedList<AccelerometerStats>();
     private static double G = 9.81;
-    private static double LOWER_THRESHOLD = 0.4*G;
+    private static double LOWER_THRESHOLD = 0.5*G;
     private static double MAX_DIFFERENCE = 2.5*G;
     private static int MAX_TRIES = 10;
     private static int MAX_TRIES_AFTER_FALL = 20;
     private static int MAX_STABLE_INTERVAL = 5;
 
-    private static List<AccelerometerStats> accelerometerDatas = new LinkedList<AccelerometerStats>();
-    public static void main(String[] args){
-
+    @ApiOperation(value = "Start fall detection algorithm", tags = "Fall Detection")
+    @RequestMapping(value = "/startFallDetection/{userId}",method = RequestMethod.GET , produces="application/json")
+    public ResponseEntity<SimpleResponse> startFallDetection(@PathVariable(value="userId") String userId) {
+        Long elderly = elderlyResponsibleRepository.findAssociatedElderly(Long.parseLong(userId));
+//        System.out.println(elderly);
+//        return new ResponseEntity<SimpleResponse>(new SimpleResponse("Invoked with: " + elderly.toString(),true), HttpStatus.OK);
         try {
-            Class.forName("com.mysql.jdbc.Driver") ;
-            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/diplomatikh", "root", "5576@@@@") ;
-            Statement stmt = conn.createStatement() ;
-            String query = "select s.x,s.y,s.z from accelerometer_stats s where s.user_id = '1'" ;
-            ResultSet rs = stmt.executeQuery(query) ;
 
-            while(rs.next()) {
-                AccelerometerStats accelerometerStats = new AccelerometerStats();
-                accelerometerStats.setX(rs.getString(1));
-                accelerometerStats.setY(rs.getString(2));
-                accelerometerStats.setZ(rs.getString(3));
-                accelerometerDatas.add(accelerometerStats);
-            }
+            Date dNow = new Date( ); // Instantiate a Date object
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(dNow);
+            cal.add(Calendar.MINUTE, -20);
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            System.out.println(cal.getTime());
+            dNow = cal.getTime();
+            String timestamp = format1.format(dNow);
+            accelerometerDatas = accelerometerStatsRepository.findByTimeStamp(timestamp);
+
+
             LinkedList<AccelerometerStats> remainingAccelerometerDatas = new LinkedList<>();
 
             while(accelerometerDatas.size()>1)
@@ -83,6 +109,8 @@ public class FallDetection {
         {
             e.printStackTrace();
         }
+        return new ResponseEntity<SimpleResponse>(new SimpleResponse("Invoked with: " + elderly.toString(),true), HttpStatus.OK);
+
     }
 
     private static double preFallPhaseDetected(List<AccelerometerStats> accelerometerData)

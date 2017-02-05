@@ -19,6 +19,8 @@ public class User {
     private String name;
     private String surname;
 
+
+
     @NotNull
     private String password;
 

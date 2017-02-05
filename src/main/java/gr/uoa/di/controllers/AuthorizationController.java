@@ -1,7 +1,9 @@
 package gr.uoa.di.controllers;
 
+import gr.uoa.di.entities.ElderlyResponsible;
 import gr.uoa.di.entities.SimpleResponse;
 import gr.uoa.di.entities.User;
+import gr.uoa.di.repository.ElderlyResponsibleRepository;
 import gr.uoa.di.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,10 @@ public class AuthorizationController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ElderlyResponsibleRepository elderlyResponsibleRepository;
+
+
 
     @ApiOperation(value = "Registers user with give username,name,surname & password", tags = "Authorization")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -21,8 +27,17 @@ public class AuthorizationController {
         System.out.println("REGISTER " + user.toString());
 
             User userFromDB = userRepository.findByUsername(user.getUsername());
-            if(userFromDB==null || userFromDB.getUsername()==null)
-                user=userRepository.save(user);
+            if(userFromDB==null || userFromDB.getUsername()==null) {
+                user = userRepository.save(user);
+                //TODO proper creation of responsible user
+                User responsibleUser = new User();
+                responsibleUser.setName("ResponsibleA");
+                responsibleUser.setUsername("respA");
+                responsibleUser.setPassword("1111");
+                responsibleUser = userRepository.save(responsibleUser);
+                ElderlyResponsible elderlyResponsible = new ElderlyResponsible(responsibleUser,user);
+                elderlyResponsible = elderlyResponsibleRepository.save(elderlyResponsible);
+            }
             else
                 return  new SimpleResponse("User with username "+ user.getUsername() +" already exists in database.",false);
         return new SimpleResponse("User succesfully created with id = " + user.getId(),true);

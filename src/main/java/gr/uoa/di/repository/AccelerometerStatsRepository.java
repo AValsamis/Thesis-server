@@ -17,7 +17,7 @@ import java.util.List;
 @Repository
 public interface AccelerometerStatsRepository extends CrudRepository<AccelerometerStats,Long> {
 
-    @Query("select s.x,s.y,s.z from AccelerometerStats s where s.timeStamp > :timestamp")
+    @Query("select s from AccelerometerStats s where s.timeStamp > :timestamp")
     public List<AccelerometerStats> findByTimeStamp(@Param("timestamp")String timestamp);
 
 }
