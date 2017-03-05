@@ -48,7 +48,9 @@ public class FallDetectionController {
 
     @ApiOperation(value = "Start fall detection algorithm", tags = "Fall Detection")
     @RequestMapping(value = "/startFallDetection/{userId}",method = RequestMethod.GET , produces="application/json")
-    public ResponseEntity<SimpleResponse> startFallDetection(@PathVariable(value="userId") String userId) {
+    public int startFallDetection(@PathVariable(value="userId") String userId) {
+
+        int fallCertainty = 0;
         Long elderly = elderlyResponsibleRepository.findAssociatedElderly(Long.parseLong(userId));
 //        System.out.println(elderly);
 //        return new ResponseEntity<SimpleResponse>(new SimpleResponse("Invoked with: " + elderly.toString(),true), HttpStatus.OK);
@@ -88,10 +90,12 @@ public class FallDetectionController {
                     if (fallDetected) {
 
                         System.out.println("DANGER");
+                        fallCertainty = 1;
                         fallDetectedAgain=afterFallPhaseDetected(accelerometerDatas);
                         if(fallDetectedAgain)
                         {
                             System.out.println("SURE FALL");
+                            fallCertainty = 2;
                             continue;
                         }
                     }
@@ -102,14 +106,13 @@ public class FallDetectionController {
                     break;
 
             }
-//            System.out.println(preFallPhaseDetected(accelerometerDatas));
             System.out.println(accelerometerDatas);
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-        return new ResponseEntity<SimpleResponse>(new SimpleResponse("Invoked with: " + elderly.toString(),true), HttpStatus.OK);
+        return fallCertainty;
 
     }
 

@@ -200,6 +200,9 @@ public class MetricsController {
 
     }
 
+
+
+
     @ApiOperation(value = "Send danger zones of user", tags = "Metrics")
     @RequestMapping(value = "/dangerZones/{user}", method = RequestMethod.GET ,produces="application/json")
     public ResponseEntity<List<Zone>> dangerZonesForUser(@PathVariable(value="user") String user) {
@@ -248,5 +251,13 @@ public class MetricsController {
         System.out.println(dataPacket.toString());
         return new SimpleResponse("Invoked with: " + dataPacket.toString(),true);
     }
+
+    @ApiOperation(value = "Find if user is elderly by username", tags = "Metrics")
+    @RequestMapping(value = "/isElderly/{username}", method = RequestMethod.GET ,produces="application/json")
+    public boolean isElderly(@PathVariable(value="username") String username) {
+        User userFromDB = userRepository.findByUsername(username);
+        return userFromDB.getResponsibleUserName() != null;
+    }
+
 
 }

@@ -29,14 +29,12 @@ public class AuthorizationController {
             User userFromDB = userRepository.findByUsername(user.getUsername());
             if(userFromDB==null || userFromDB.getUsername()==null) {
                 user = userRepository.save(user);
-                //TODO proper creation of responsible user
-                User responsibleUser = new User();
-                responsibleUser.setName("ResponsibleA");
-                responsibleUser.setUsername("respA");
-                responsibleUser.setPassword("1111");
-                responsibleUser = userRepository.save(responsibleUser);
-                ElderlyResponsible elderlyResponsible = new ElderlyResponsible(responsibleUser,user);
-                elderlyResponsible = elderlyResponsibleRepository.save(elderlyResponsible);
+                if(user.getResponsibleUserName()!=null)
+                {
+                    User responsibleUser = userRepository.findByUsername(user.getResponsibleUserName());
+                    ElderlyResponsible elderlyResponsible = new ElderlyResponsible(responsibleUser,user);
+                    elderlyResponsibleRepository.save(elderlyResponsible);
+                }
             }
             else
                 return  new SimpleResponse("User with username "+ user.getUsername() +" already exists in database.",false);
