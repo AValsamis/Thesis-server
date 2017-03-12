@@ -32,6 +32,11 @@ public class MetricsController {
     @Autowired
     private OrientationStatsRepository orientationStatsRepository;
 
+    @Autowired
+    private DataCollectionServiceStatusRepository dataCollectionServiceStatusRepository;
+
+    @Autowired
+    private ElderlyResponsibleRepository elderlyResponsibleRepository;
 
     private static final int maximum = 360;
     private static final int minimum = 0;
@@ -259,5 +264,61 @@ public class MetricsController {
         return userFromDB.getResponsibleUserName() != null;
     }
 
+    @ApiOperation(value = "Start data collection service", tags = "Metrics")
+    @RequestMapping(value = "/startDataCollection/{username}", method = RequestMethod.POST ,consumes="application/json")
+    // This is the responsible's username
+    public SimpleResponse startDataCollection(@PathVariable(value="username") String username) {
+
+        DataCollectionServiceStatus dataCollectionServiceStatus = new DataCollectionServiceStatus();
+
+        User responsible = userRepository.findByUsername(username);
+
+        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getId());
+
+        User elderly = userRepository.findOne(elderlyId);
+
+        dataCollectionServiceStatus.setUser(elderly);
+        dataCollectionServiceStatus.setShouldRun(true);
+        dataCollectionServiceStatus.setTimestamp(new Date().toString());
+
+        dataCollectionServiceStatusRepository.save(dataCollectionServiceStatus);
+
+        return new SimpleResponse("Will start data collection", true);
+    }
+
+    @ApiOperation(value = "Stop data collection service", tags = "Metrics")
+    @RequestMapping(value = "/stopDataCollection/{username}", method = RequestMethod.POST ,consumes="application/json")
+    // This is the responsible's username
+    public SimpleResponse stopDataCollection(@PathVariable(value="username") String username) {
+
+        DataCollectionServiceStatus dataCollectionServiceStatus = new DataCollectionServiceStatus();
+
+        User responsible = userRepository.findByUsername(username);
+
+        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getId());
+
+        User elderly = userRepository.findOne(elderlyId);
+
+        dataCollectionServiceStatus.setUser(elderly);
+        dataCollectionServiceStatus.setShouldRun(false);
+        dataCollectionServiceStatus.setTimestamp(new Date().toString());
+
+        dataCollectionServiceStatusRepository.save(dataCollectionServiceStatus);
+
+        return new SimpleResponse("Will stop data collection", true);
+    }
+
+    @ApiOperation(value = "Get if data collection service should run", tags = "Metrics")
+    @RequestMapping(value = "/shouldRun/{username}", method = RequestMethod.GET ,produces="application/json")
+    // This is the elderly username
+    public SimpleResponse shouldRun(@PathVariable(value="username") String username) {
+
+        User elderly = userRepository.findByUsername(username);
+        List<DataCollectionServiceStatus> serviceStatus = dataCollectionServiceStatusRepository.getLatestTimestampForUser(elderly.getId());
+        if(serviceStatus!=null && serviceStatus.get(0)!=null)
+            return new SimpleResponse("",serviceStatus.get(0).getShouldRun());
+        else
+            return new SimpleResponse("",false);
+    }
 
 }
