@@ -48,13 +48,13 @@ public class AuthorizationController {
     public SimpleResponse login(@RequestParam(value="username") String username, @RequestParam(value="password") String password) {
         System.out.println("LOGIN: "+username+ " "+ password);
         User userFromDB = userRepository.findByUsername(username);
-        Boolean isElderly = false;
-        if (userFromDB.getResponsibleUserName().isEmpty())
+        boolean isElderly = false;
+        if (userFromDB.getResponsibleUserName()!=null)
             isElderly = true;
 
         if(userFromDB!=null && userFromDB.getUsername()!=null && userFromDB.getPassword().equals(password))
-            return new SimpleResponse(username +" is found in database",true,isElderly);
+            return new SimpleResponse(username +" is found in database",isElderly, true);
         else
-            return new SimpleResponse("Password is incorrect or user was not found in our database",false,isElderly);
+            return new SimpleResponse("Password is incorrect or user was not found in our database",isElderly,true);
     }
 }

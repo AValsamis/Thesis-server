@@ -8,47 +8,26 @@ public class SimpleResponse {
 
     private String response ="";
 
-    private Boolean isOk;
+    private Boolean ok;
 
-    private Boolean isElderly;
+    private Boolean elderly;
+
+    public SimpleResponse() {
+    }
 
     public SimpleResponse(String s) {
         this.response = s;
     }
 
-    public SimpleResponse(String response, Boolean isOk, Boolean isElderly) {
+    public SimpleResponse(String response, Boolean ok, Boolean elderly) {
         this.response = response;
-        this.isOk = isOk;
-        this.isElderly = isElderly;
+        this.ok = ok;
+        this.elderly = elderly;
     }
 
-    public SimpleResponse(String response, Boolean isOk) {
+    public SimpleResponse(String response, Boolean ok) {
         this.response = response;
-        this.isOk = isOk;
-    }
-
-    public Boolean getOk() {
-        return isOk;
-    }
-
-    public void setOk(Boolean ok) {
-        isOk = ok;
-    }
-
-    public Boolean getElderly() {
-        return isElderly;
-    }
-
-    public void setElderly(Boolean elderly) {
-        isElderly = elderly;
-    }
-
-    public Boolean getIsOk() {
-        return isOk;
-    }
-
-    public void setIsOk(Boolean ok) {
-        isOk = ok;
+        this.ok = ok;
     }
 
     public String getResponse() {
@@ -57,5 +36,31 @@ public class SimpleResponse {
 
     public void setResponse(String response) {
         this.response = response;
+    }
+
+
+    public Boolean getOk() {
+        return ok;
+    }
+
+    public void setOk(Boolean ok) {
+        this.ok = ok;
+    }
+
+    public Boolean getElderly() {
+        return elderly;
+    }
+
+    public void setElderly(Boolean elderly) {
+        this.elderly = elderly;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleResponse{" +
+                "response='" + response + '\'' +
+                ", ok=" + ok +
+                ", elderly=" + elderly +
+                '}';
     }
 }
