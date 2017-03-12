@@ -1,5 +1,6 @@
 package gr.uoa.di.controllers;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import gr.uoa.di.entities.ElderlyResponsible;
 import gr.uoa.di.entities.SimpleResponse;
 import gr.uoa.di.entities.User;
@@ -47,9 +48,13 @@ public class AuthorizationController {
     public SimpleResponse login(@RequestParam(value="username") String username, @RequestParam(value="password") String password) {
         System.out.println("LOGIN: "+username+ " "+ password);
         User userFromDB = userRepository.findByUsername(username);
+        Boolean isElderly = false;
+        if (userFromDB.getResponsibleUserName().isEmpty())
+            isElderly = true;
+
         if(userFromDB!=null && userFromDB.getUsername()!=null && userFromDB.getPassword().equals(password))
-            return new SimpleResponse(username +" is found in database",true);
+            return new SimpleResponse(username +" is found in database",true,isElderly);
         else
-            return new SimpleResponse("Password is incorrect or user was not found in our database",false);
+            return new SimpleResponse("Password is incorrect or user was not found in our database",false,isElderly);
     }
 }

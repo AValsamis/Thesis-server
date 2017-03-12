@@ -10,13 +10,37 @@ public class SimpleResponse {
 
     private Boolean isOk;
 
+    private Boolean isElderly;
+
     public SimpleResponse(String s) {
         this.response = s;
+    }
+
+    public SimpleResponse(String response, Boolean isOk, Boolean isElderly) {
+        this.response = response;
+        this.isOk = isOk;
+        this.isElderly = isElderly;
     }
 
     public SimpleResponse(String response, Boolean isOk) {
         this.response = response;
         this.isOk = isOk;
+    }
+
+    public Boolean getOk() {
+        return isOk;
+    }
+
+    public void setOk(Boolean ok) {
+        isOk = ok;
+    }
+
+    public Boolean getElderly() {
+        return isElderly;
+    }
+
+    public void setElderly(Boolean elderly) {
+        isElderly = elderly;
     }
 
     public Boolean getIsOk() {
