@@ -45,26 +45,27 @@ public class FallDetectionController {
     private static int MAX_TRIES = 10;
     private static int MAX_TRIES_AFTER_FALL = 20;
     private static int MAX_STABLE_INTERVAL = 5;
+    private static int LAST_X_MINUTES = 10;
 
     @ApiOperation(value = "Start fall detection algorithm", tags = "Fall Detection")
-    @RequestMapping(value = "/startFallDetection/{userId}",method = RequestMethod.GET , produces="application/json")
-    public int startFallDetection(@PathVariable(value="userId") String userId) {
+    @RequestMapping(value = "/startFallDetection/{username}",method = RequestMethod.GET , produces="application/json")
+    public int startFallDetection(@PathVariable(value="username") String username) {
 
+        System.out.println("------------------------");
+        System.out.println("FALL DETECTION RUNNING");
+        System.out.println("------------------------");
         int fallCertainty = 0;
-        Long elderly = elderlyResponsibleRepository.findAssociatedElderly(Long.parseLong(userId));
-//        System.out.println(elderly);
-//        return new ResponseEntity<SimpleResponse>(new SimpleResponse("Invoked with: " + elderly.toString(),true), HttpStatus.OK);
         try {
 
             Date dNow = new Date( ); // Instantiate a Date object
             Calendar cal = Calendar.getInstance();
             cal.setTime(dNow);
-            cal.add(Calendar.MINUTE, -20);
+            cal.add(Calendar.MINUTE, -LAST_X_MINUTES);
             SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             System.out.println(cal.getTime());
             dNow = cal.getTime();
             String timestamp = format1.format(dNow);
-            accelerometerDatas = accelerometerStatsRepository.findByTimeStamp(timestamp);
+            accelerometerDatas = accelerometerStatsRepository.findByTimeStamp(timestamp, username);
 
 
             LinkedList<AccelerometerStats> remainingAccelerometerDatas = new LinkedList<>();
@@ -76,10 +77,7 @@ public class FallDetectionController {
 
                 Double preFallAcceleration = preFallPhaseDetected(accelerometerDatas);
 
-
                 System.out.println(accelerometerDatas);
-
-
 
                 boolean fallDetected = false;
                 boolean fallDetectedAgain = false;
@@ -90,10 +88,12 @@ public class FallDetectionController {
                     if (fallDetected) {
 
                         System.out.println("DANGER");
+                        // TODO notification1 here (possible fall)
                         fallCertainty = 1;
                         fallDetectedAgain=afterFallPhaseDetected(accelerometerDatas);
                         if(fallDetectedAgain)
                         {
+                            // TODO notification2 here (sure fall)
                             System.out.println("SURE FALL");
                             fallCertainty = 2;
                             continue;
