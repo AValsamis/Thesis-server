@@ -1,6 +1,7 @@
 package gr.uoa.di.entities;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Created by skand on 3/12/2017.
@@ -17,13 +18,13 @@ public class DataCollectionServiceStatus {
     @JoinColumn(name = "userId")
     private User elderlyUser;
     private Boolean shouldRun;
-    private String timestamp = "";
+    private Date timestamp;
 
 
     public DataCollectionServiceStatus() {
     }
 
-    public DataCollectionServiceStatus(String timestamp, Boolean shouldRun, User elderlyUser) {
+    public DataCollectionServiceStatus(Date timestamp, Boolean shouldRun, User elderlyUser) {
         this.timestamp = timestamp;
         this.shouldRun = shouldRun;
         this.elderlyUser = elderlyUser;
@@ -54,11 +55,11 @@ public class DataCollectionServiceStatus {
         this.shouldRun = shouldRun;
     }
 
-    public String getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 }

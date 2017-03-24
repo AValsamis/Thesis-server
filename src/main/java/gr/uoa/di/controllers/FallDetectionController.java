@@ -49,7 +49,7 @@ public class FallDetectionController {
     private static int MAX_TRIES = 10;
     private static int MAX_TRIES_AFTER_FALL = 20;
     private static int MAX_STABLE_INTERVAL = 5;
-    private static int LAST_X_MINUTES = 10;
+    private static int LAST_X_MINUTES = 60;
 
     public FallDetectionController() throws IOException {
     }
@@ -65,7 +65,7 @@ public class FallDetectionController {
 
              try {
 
-            Date dNow = new Date( ); // Instantiate a Date object
+            Date dNow = new Date(); // Instantiate a Date object
             Calendar cal = Calendar.getInstance();
             cal.setTime(dNow);
             cal.add(Calendar.MINUTE, -LAST_X_MINUTES);

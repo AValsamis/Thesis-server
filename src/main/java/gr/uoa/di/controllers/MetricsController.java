@@ -111,10 +111,11 @@ public class MetricsController {
 
 
     @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
-    @RequestMapping(value = "/getZone", method = RequestMethod.POST, consumes="application/json")
-    public SimpleResponse getZone(@RequestBody List<Wifi> wifis) {
+    @RequestMapping(value = "/getZone", method = RequestMethod.POST)
+    public SimpleResponse getZone(@RequestPart("wifi") List<Wifi> wifis, @RequestPart("user") User user) {
 
         System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
+        User userfromDb = userRepository.findByUsername(user.getUsername());
         List<String> closestZones = new ArrayList<>();
         for(Wifi wifi : wifis)
         {
@@ -137,7 +138,7 @@ public class MetricsController {
             int finalmin = -1;
             if(wifiFromDB!=null)
             {
-                WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB);
+                WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB, userfromDb);
                 System.out.println("TEST: " + Arrays.asList(wifiInZones));
                 for(int i = 0; i < wifiInZones.length; i++)
                 {
@@ -204,9 +205,6 @@ public class MetricsController {
         return  new ResponseEntity<List<Zone>>(zones, HttpStatus.OK);
 
     }
-
-
-
 
     @ApiOperation(value = "Send danger zones of user", tags = "Metrics")
     @RequestMapping(value = "/dangerZones/{user}", method = RequestMethod.GET ,produces="application/json")
@@ -281,7 +279,7 @@ public class MetricsController {
 
         dataCollectionServiceStatus.setUser(elderly);
         dataCollectionServiceStatus.setShouldRun(true);
-        dataCollectionServiceStatus.setTimestamp(new Date().toString());
+        dataCollectionServiceStatus.setTimestamp(new Date());
 
         dataCollectionServiceStatusRepository.save(dataCollectionServiceStatus);
 
@@ -305,7 +303,7 @@ public class MetricsController {
 
         dataCollectionServiceStatus.setUser(elderly);
         dataCollectionServiceStatus.setShouldRun(false);
-        dataCollectionServiceStatus.setTimestamp(new Date().toString());
+        dataCollectionServiceStatus.setTimestamp(new Date());
 
         dataCollectionServiceStatusRepository.save(dataCollectionServiceStatus);
 
