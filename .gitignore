@@ -1,0 +1,9 @@
+/.idea/
+/keys
+/.gradle/
+/build/
+/classes/
+/gradle/
+/src/main/resources/application.properties
+/src/main/resources/keys
+/src/main/resources/keys.properties

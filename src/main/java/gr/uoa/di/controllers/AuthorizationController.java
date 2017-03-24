@@ -44,16 +44,34 @@ public class AuthorizationController {
 
     @ApiOperation(value = "Login user with given username and password", tags = "Authorization")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public SimpleResponse login(@RequestParam(value="username") String username, @RequestParam(value="password") String password) {
+    public SimpleResponse login(@RequestParam(value="username") String username, @RequestParam(value="password") String password, @RequestParam(value="token")String token) {
         System.out.println("LOGIN: "+username+ " "+ password);
         User userFromDB = userRepository.findByUsername(username);
+
         boolean isElderly = false;
         if (userFromDB.getResponsibleUserName()!=null)
             isElderly = true;
-
+        userFromDB.setToken(token);
+        userFromDB = userRepository.save(userFromDB);
         if(userFromDB!=null && userFromDB.getUsername()!=null && userFromDB.getPassword().equals(password))
             return new SimpleResponse(username +" is found in database", true, isElderly);
         else
             return new SimpleResponse("Password is incorrect or user was not found in our database",false, isElderly);
+    }
+
+
+    @ApiOperation(value = "Refreshed user's messaging token", tags = "Authorization")
+    @RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
+    public SimpleResponse refreshToken(@RequestParam(value="username") String username, @RequestParam(value="token") String token) {
+        User userFromDB = userRepository.findByUsername(username);
+        System.out.println("trying to refresh token");
+        if (userFromDB!=null)
+            userFromDB.setToken(token);
+        userFromDB = userRepository.save(userFromDB);
+
+        if(userFromDB!=null && userFromDB.getUsername()!=null)
+            return new SimpleResponse(username +"'s token refreshed", true);
+        else
+            return new SimpleResponse("User was not found in our database",false);
     }
 }

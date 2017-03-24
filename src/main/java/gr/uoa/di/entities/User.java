@@ -18,7 +18,7 @@ public class User {
     private String username;
     private String name;
     private String surname;
-
+    private String token;
     private String responsibleUserName;
 
     @NotNull
@@ -26,14 +26,30 @@ public class User {
 
     public User(){}
 
-    public User(String username, String name, String surname, String password, String responsibleUserName) {
+    public User(String username, String name, String surname, String password, String responsibleUserName, String token) {
         this.username = username;
         this.name = name;
         this.surname = surname;
         this.password = password;
         this.responsibleUserName = responsibleUserName;
+        this.token = token;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public User(long id) {
         this.userId = id;

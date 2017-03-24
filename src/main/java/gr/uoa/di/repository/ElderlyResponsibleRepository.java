@@ -18,4 +18,7 @@ public interface ElderlyResponsibleRepository extends CrudRepository<ElderlyResp
 
     @Query("select e.elderlyUser.userId from ElderlyResponsible e where e.responsibleUser.userId = :userId")
     public Long findAssociatedElderly(@Param("userId")Long userId);
+
+    @Query("select e.responsibleUser.userId from ElderlyResponsible e where  e.elderlyUser.userId= :userId")
+    public Long findAssociatedGuardian(@Param("userId")Long userId);
 }

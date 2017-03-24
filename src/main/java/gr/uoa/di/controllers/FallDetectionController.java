@@ -4,6 +4,7 @@ import gr.uoa.di.entities.AccelerometerStats;
 import gr.uoa.di.entities.SimpleResponse;
 import gr.uoa.di.entities.User;
 import gr.uoa.di.entities.Zone;
+import gr.uoa.di.messaging.GuardianNotification;
 import gr.uoa.di.repository.AccelerometerStatsRepository;
 import gr.uoa.di.repository.ElderlyResponsibleRepository;
 import gr.uoa.di.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -31,6 +33,8 @@ import java.util.List;
 @RestController
 public class FallDetectionController {
 
+    private final GuardianNotification guardianNotification = new GuardianNotification();
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -47,6 +51,9 @@ public class FallDetectionController {
     private static int MAX_STABLE_INTERVAL = 5;
     private static int LAST_X_MINUTES = 10;
 
+    public FallDetectionController() throws IOException {
+    }
+
     @ApiOperation(value = "Start fall detection algorithm", tags = "Fall Detection")
     @RequestMapping(value = "/startFallDetection/{username}",method = RequestMethod.GET , produces="application/json")
     public int startFallDetection(@PathVariable(value="username") String username) {
@@ -55,7 +62,17 @@ public class FallDetectionController {
         System.out.println("FALL DETECTION RUNNING");
         System.out.println("------------------------");
         int fallCertainty = 0;
+
+        User elderly = userRepository.findByUsername(username);
+        User guardian = userRepository.findByUsername(elderly.getResponsibleUserName());
+
         try {
+            guardianNotification.sendAndroidNotification(guardian.getToken(),"YOUR GRANDMA IS SEEING RADIKIA UPSIDE DOWN","OOPS");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+     /*   try {
 
             Date dNow = new Date( ); // Instantiate a Date object
             Calendar cal = Calendar.getInstance();
@@ -88,6 +105,7 @@ public class FallDetectionController {
                     if (fallDetected) {
 
                         System.out.println("DANGER");
+
                         // TODO notification1 here (possible fall)
                         fallCertainty = 1;
                         fallDetectedAgain=afterFallPhaseDetected(accelerometerDatas);
@@ -112,6 +130,7 @@ public class FallDetectionController {
         {
             e.printStackTrace();
         }
+        */
         return fallCertainty;
 
     }
