@@ -63,16 +63,7 @@ public class FallDetectionController {
         System.out.println("------------------------");
         int fallCertainty = 0;
 
-        User elderly = userRepository.findByUsername(username);
-        User guardian = userRepository.findByUsername(elderly.getResponsibleUserName());
-
-        try {
-            guardianNotification.sendAndroidNotification(guardian.getToken(),"YOUR GRANDMA IS SEEING RADIKIA UPSIDE DOWN","OOPS");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-     /*   try {
+             try {
 
             Date dNow = new Date( ); // Instantiate a Date object
             Calendar cal = Calendar.getInstance();
@@ -106,12 +97,24 @@ public class FallDetectionController {
 
                         System.out.println("DANGER");
 
-                        // TODO notification1 here (possible fall)
+                        User elderly = userRepository.findByUsername(username);
+                        User guardian = userRepository.findByUsername(elderly.getResponsibleUserName());
+
+                        try {
+                            guardianNotification.sendAndroidNotification(guardian.getToken(),"YOUR GRANDMA IS PROBABLY FALLING","OOPS");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                         fallCertainty = 1;
                         fallDetectedAgain=afterFallPhaseDetected(accelerometerDatas);
                         if(fallDetectedAgain)
                         {
-                            // TODO notification2 here (sure fall)
+                            try {
+                                guardianNotification.sendAndroidNotification(guardian.getToken(),"YOUR GRANDMA IS SEEING RADIKIA UPSIDE DOWN","OOPS");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             System.out.println("SURE FALL");
                             fallCertainty = 2;
                             continue;
@@ -130,7 +133,7 @@ public class FallDetectionController {
         {
             e.printStackTrace();
         }
-        */
+        
         return fallCertainty;
 
     }
@@ -194,5 +197,4 @@ public class FallDetectionController {
         }
         return false;
     }
-
 }
