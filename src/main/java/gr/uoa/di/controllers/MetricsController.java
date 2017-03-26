@@ -2,14 +2,19 @@ package gr.uoa.di.controllers;
 
 import gr.uoa.di.entities.*;
 import gr.uoa.di.repository.*;
+import gr.uoa.di.utils.FallDetectionUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +33,9 @@ public class MetricsController {
     private WifiInZoneRepository wifiInZoneRepository;
 
     @Autowired
+    private FallDetectionUtil fallDetectionUtil;
+
+    @Autowired
     private AccelerometerStatsRepository accelerometerStatsRepository;
     @Autowired
     private OrientationStatsRepository orientationStatsRepository;
@@ -40,6 +48,32 @@ public class MetricsController {
 
     private static final int maximum = 360;
     private static final int minimum = 0;
+
+    @PostConstruct
+    void initializeFallDetectionProcesses() throws IOException {
+        List<User> elderlyUsers = dataCollectionServiceStatusRepository.findUsersThatFallDetectionShouldRun();
+        for(User elderlyUser : elderlyUsers)
+        {
+            ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+            exec.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    SimpleResponse response = shouldRun(elderlyUser.getUsername());
+                    if(response.getOk())
+                    {
+                        System.out.println("FALL DETECTION IS ON");
+                        fallDetectionUtil.startFallDetection(elderlyUser.getUsername());
+                    }
+                    else
+                    {
+                        System.out.println("FALL DETECTION IS OFF");
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }, 0, 60, TimeUnit.SECONDS);
+
+        }
+    }
 
     @ApiOperation(value = "Dummy getter of single accelerometer Metrics", tags = "Metrics")
     @RequestMapping(value = "/accelerometerInstance", method = RequestMethod.GET)
@@ -265,7 +299,7 @@ public class MetricsController {
     @ApiOperation(value = "Start data collection service", tags = "Metrics")
     @RequestMapping(value = "/startDataCollection", method = RequestMethod.POST ,consumes="application/json")
     // This is the responsible user
-    public SimpleResponse startDataCollection(@RequestBody User user) {
+    public SimpleResponse startDataCollection(@RequestBody User user) throws IOException {
 
         System.out.println("Start data collection");
 
@@ -282,6 +316,23 @@ public class MetricsController {
         dataCollectionServiceStatus.setTimestamp(new Date());
 
         dataCollectionServiceStatusRepository.save(dataCollectionServiceStatus);
+
+        ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+
+        exec.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                SimpleResponse response = shouldRun(user.getUsername());
+                if(response.getOk())
+                {
+                    fallDetectionUtil.startFallDetection(elderly.getUsername());
+                }
+                else
+                {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }, 0, 60, TimeUnit.SECONDS);
 
         return new SimpleResponse("Will start data collection", true);
     }
