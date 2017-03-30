@@ -2,9 +2,11 @@ package gr.uoa.di.utils;
 
 import gr.uoa.di.entities.AccelerometerStats;
 import gr.uoa.di.entities.User;
+import gr.uoa.di.entities.UserInZone;
 import gr.uoa.di.messaging.GuardianNotification;
 import gr.uoa.di.repository.AccelerometerStatsRepository;
 import gr.uoa.di.repository.ElderlyResponsibleRepository;
+import gr.uoa.di.repository.UserInZoneRepository;
 import gr.uoa.di.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ public class FallDetectionUtil {
     private ElderlyResponsibleRepository elderlyResponsibleRepository;
     @Autowired
     private AccelerometerStatsRepository accelerometerStatsRepository;
+    @Autowired
+    private UserInZoneRepository userInZoneRepository;
 
     private static List<AccelerometerStats> accelerometerDatas = new LinkedList<AccelerometerStats>();
     private static double G = 9.81;
@@ -112,7 +116,12 @@ public class FallDetectionUtil {
             if(fallCertainty==1)
             {
                 try {
-                    guardianNotification.sendAndroidNotification(guardian.getToken(),"Possible fall for "+elderly.getUsername(),"Possible danger");
+                    List<UserInZone> userInZones = userInZoneRepository.getCurrentZoneForUser(elderly.getUserId());
+                    if(userInZones!=null && userInZones.size()>0)
+                    {
+                        guardianNotification.sendAndroidNotification(guardian.getToken(), "Possible fall for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName(), "Possible danger");
+                        System.out.println("Possible fall for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -121,7 +130,12 @@ public class FallDetectionUtil {
             else if(fallCertainty==2)
             {
                 try {
-                    guardianNotification.sendAndroidNotification(guardian.getToken(),"Sure fall for "+elderly.getUsername()+"!!!Please check on him/her!!!","DANGER!!!");
+                    List<UserInZone> userInZones = userInZoneRepository.getCurrentZoneForUser(elderly.getUserId());
+                    if(userInZones!=null && userInZones.size()>0)
+                    {
+                        guardianNotification.sendAndroidNotification(guardian.getToken(), "Sure fall for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName() + "!!!Please check on him/her!!!", "DANGER!!!");
+                        System.out.println("Sure fall for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

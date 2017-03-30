@@ -46,6 +46,9 @@ public class MetricsController {
     @Autowired
     private ElderlyResponsibleRepository elderlyResponsibleRepository;
 
+    @Autowired
+    private UserInZoneRepository userInZoneRepository;
+
     private static final int maximum = 360;
     private static final int minimum = 0;
 
@@ -143,13 +146,14 @@ public class MetricsController {
         return new SimpleResponse("Zone succesfully created with id = " + zone1.getZoneId() + " and name = " + zone1.getFriendlyName(),true);
     }
 
-
     @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
     @RequestMapping(value = "/getZone", method = RequestMethod.POST)
     public SimpleResponse getZone(@RequestPart("wifi") List<Wifi> wifis, @RequestPart("user") User user) {
 
         System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
         User userfromDb = userRepository.findByUsername(user.getUsername());
+        Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(userfromDb.getId());
+        User guardianFromDb = userRepository.findOne(guardianId);
         List<String> closestZones = new ArrayList<>();
         for(Wifi wifi : wifis)
         {
@@ -172,7 +176,7 @@ public class MetricsController {
             int finalmin = -1;
             if(wifiFromDB!=null)
             {
-                WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB, userfromDb);
+                WifiInZone[] wifiInZones = wifiInZoneRepository.findZonesByWifiId(wifiFromDB, guardianFromDb);
                 System.out.println("TEST: " + Arrays.asList(wifiInZones));
                 for(int i = 0; i < wifiInZones.length; i++)
                 {
@@ -219,6 +223,12 @@ public class MetricsController {
             Map.Entry pair = (Map.Entry) o;
             if (pair.getValue() == maxCount){
                 System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
+                UserInZone userInZone = new UserInZone();
+                userInZone.setElderlyUser(userfromDb);
+                Zone zoneFromDb = zoneRepository.findByFriendlyName(pair.getKey().toString());
+                userInZone.setZone(zoneFromDb);
+                userInZone.setTimestamp(new Date());
+                userInZoneRepository.save(userInZone);
                 return new SimpleResponse(pair.getKey().toString());
             }
         }
