@@ -1,5 +1,6 @@
 package gr.uoa.di.repository;
 
+import gr.uoa.di.entities.User;
 import gr.uoa.di.entities.Wifi;
 import gr.uoa.di.entities.Zone;
 import org.springframework.data.jpa.repository.Query;
@@ -27,7 +28,8 @@ public interface ZoneRepository extends CrudRepository<Zone,Long> {
 
     @Query("select z from Zone z where z.user.username = :userName  and z.isSafe=0")
     public List<Zone> findUserDangerZones(@Param("userName") String userName);
-//    @Query("select z from Zone z where z.wifi = :wifi")
-//    public Zone[] findZonesByWifiId(@Param("wifi") Wifi wifi);
+
+    @Query("select z from Zone z where z.user.userId = :userId")
+    public List<Zone> findZonesByUserId(@Param("userId") Long userId);
 
 }

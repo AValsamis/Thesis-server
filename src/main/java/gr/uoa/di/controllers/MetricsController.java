@@ -153,6 +153,10 @@ public class MetricsController {
         System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
         User userfromDb = userRepository.findByUsername(user.getUsername());
         Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(userfromDb.getId());
+        // handle case where no zones exist for use
+        List <Zone> zones = zoneRepository.findZonesByUserId(guardianId);
+        if(zones==null || zones.size()==0)
+            return null;
         User guardianFromDb = userRepository.findOne(guardianId);
         List<String> closestZones = new ArrayList<>();
         for(Wifi wifi : wifis)
@@ -376,13 +380,14 @@ public class MetricsController {
     // This is the elderly username
     public SimpleResponse shouldRun(@PathVariable(value="username") String username) {
 
-        System.out.println("Should run?");
+        System.out.println("Should run?"+username);
 
         User user = userRepository.findByUsername(username);
         if(user.getResponsibleUserName()!=null) {
             List<DataCollectionServiceStatus> serviceStatus = dataCollectionServiceStatusRepository.getLatestTimestampForUser(user.getId());
-            if (serviceStatus != null && serviceStatus.size() > 0 && serviceStatus.get(0) != null)
+            if (serviceStatus != null && serviceStatus.size() > 0 && serviceStatus.get(0) != null) {
                 return new SimpleResponse("", serviceStatus.get(0).getShouldRun());
+            }
             else
                 return new SimpleResponse("", false);
         }
