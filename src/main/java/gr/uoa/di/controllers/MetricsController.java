@@ -268,7 +268,7 @@ public class MetricsController {
     public SimpleResponse sendDataPacket(@RequestBody DataPacket dataPacket) throws IOException {
         //check if user is in danger zone and send true if he is/false otherwise
 
-        System.out.println("Putting data from packet in DB for user: " + dataPacket.getUser().getUsername());
+//        System.out.println("Putting data from packet in DB for user: " + dataPacket.getUser().getUsername());
 
         ArrayList<AccelerometerStats> accelerometerStats = dataPacket.getAccelerometerStats();
         ArrayList<OrientationStats> orientationStats = dataPacket.getOrientationStats();
@@ -299,7 +299,7 @@ public class MetricsController {
             orientationStatsRepository.save(orientationStats1);
         }
 
-        System.out.println(dataPacket.toString());
+//        System.out.println(dataPacket.toString());
         return new SimpleResponse("Invoked with: " + dataPacket.toString(),true);
     }
 
