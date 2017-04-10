@@ -1,10 +1,6 @@
 package gr.uoa.di;
 
 import gr.uoa.di.entities.AccelerometerStats;
-import gr.uoa.di.entities.User;
-import gr.uoa.di.repository.AccelerometerStatsRepository;
-import gr.uoa.di.repository.WifiInZoneRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

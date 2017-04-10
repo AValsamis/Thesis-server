@@ -78,22 +78,7 @@ public class MetricsController {
         }
     }
 
-    @ApiOperation(value = "Dummy getter of single accelerometer Metrics", tags = "Metrics")
-    @RequestMapping(value = "/accelerometerInstance", method = RequestMethod.GET)
-    public AccelerometerStats accelerometerGetLast() {
-
-        AccelerometerStats accelerometerStats = new AccelerometerStats();
-        Integer randomNum = minimum + (int)(Math.random() * maximum);
-        accelerometerStats.setX(randomNum.toString());
-        randomNum = minimum + (int)(Math.random() * maximum);
-        accelerometerStats.setY(randomNum.toString());
-        randomNum = minimum + (int)(Math.random() * maximum);
-        accelerometerStats.setZ(randomNum.toString());
-
-        return accelerometerStats;
-    }
-
-    @ApiOperation(value = "Send Danger zone", tags = "Metrics")
+    @ApiOperation(value = "Send Danger zone", tags = "Zone")
     @RequestMapping(value = "/registerZone", method = RequestMethod.POST )
     public SimpleResponse registerZone(@RequestPart(name="wifi") List<Wifi> wifis, @RequestPart(name="zone")Zone zone) throws IOException {
         System.out.println("Saving zone with signal strength list:");
@@ -146,7 +131,7 @@ public class MetricsController {
         return new SimpleResponse("Zone succesfully created with id = " + zone1.getZoneId() + " and name = " + zone1.getFriendlyName(),true);
     }
 
-    @ApiOperation(value = "Get zone the user is currently in", tags = "Metrics")
+    @ApiOperation(value = "Get zone the user is currently in", tags = "Zone")
     @RequestMapping(value = "/getZone", method = RequestMethod.POST)
     public SimpleResponse getZone(@RequestPart("wifi") List<Wifi> wifis, @RequestPart("user") User user) {
 
@@ -239,14 +224,14 @@ public class MetricsController {
         return null;
     }
 
-    @ApiOperation(value = "Send if user is in danger zone", tags = "Metrics")
+    @ApiOperation(value = "Send if user is in danger zone", tags = "Zone")
     @RequestMapping(value = "/isInDangerZone", method = RequestMethod.POST ,consumes="application/json")
     public boolean isInDangerZone(@RequestParam(value="Signal Strength List") List<Zone> signalStrengths) {
         //check if user is in danger zone and send true if he is/false otherwise
         return true;
     }
 
-    @ApiOperation(value = "Send safe zones of user", tags = "Metrics")
+    @ApiOperation(value = "Send safe zones of user", tags = "Zone")
     @RequestMapping(value = "/safeZones/{user}", method = RequestMethod.GET ,produces="application/json")
     public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") String user) {
         List<Zone> zones = zoneRepository.findUserSafeZones(user);
@@ -254,7 +239,7 @@ public class MetricsController {
 
     }
 
-    @ApiOperation(value = "Send danger zones of user", tags = "Metrics")
+    @ApiOperation(value = "Send danger zones of user", tags = "Zone")
     @RequestMapping(value = "/dangerZones/{user}", method = RequestMethod.GET ,produces="application/json")
     public ResponseEntity<List<Zone>> dangerZonesForUser(@PathVariable(value="user") String user) {
         List<Zone> zones = zoneRepository.findUserDangerZones(user);
@@ -263,7 +248,7 @@ public class MetricsController {
         return  new ResponseEntity<List<Zone>>(zones, HttpStatus.OK);
 
     }
-    @ApiOperation(value = "Send Data Packet", tags = "Metrics")
+    @ApiOperation(value = "Send Data Packet", tags = "Data Collection")
     @RequestMapping(value = "/sendDataPacket", method = RequestMethod.POST, consumes="application/json")
     public SimpleResponse sendDataPacket(@RequestBody DataPacket dataPacket) throws IOException {
         //check if user is in danger zone and send true if he is/false otherwise
@@ -303,14 +288,14 @@ public class MetricsController {
         return new SimpleResponse("Invoked with: " + dataPacket.toString(),true);
     }
 
-    @ApiOperation(value = "Find if user is elderly by username", tags = "Metrics")
+    @ApiOperation(value = "Find if user is elderly by username", tags = "User")
     @RequestMapping(value = "/isElderly/{username}", method = RequestMethod.GET ,produces="application/json")
     public boolean isElderly(@PathVariable(value="username") String username) {
         User userFromDB = userRepository.findByUsername(username);
         return userFromDB.getResponsibleUserName() != null;
     }
 
-    @ApiOperation(value = "Start data collection service", tags = "Metrics")
+    @ApiOperation(value = "Start data collection service", tags = "Data Collection")
     @RequestMapping(value = "/startDataCollection", method = RequestMethod.POST ,consumes="application/json")
     // This is the responsible user
     public SimpleResponse startDataCollection(@RequestBody User user) throws IOException {
@@ -351,7 +336,7 @@ public class MetricsController {
         return new SimpleResponse("Will start data collection", true);
     }
 
-    @ApiOperation(value = "Stop data collection service", tags = "Metrics")
+    @ApiOperation(value = "Stop data collection service", tags = "Data Collection")
     @RequestMapping(value = "/stopDataCollection", method = RequestMethod.POST ,consumes="application/json")
     // This is the responsible user
     public SimpleResponse stopDataCollection(@RequestBody User user) {
@@ -375,7 +360,7 @@ public class MetricsController {
         return new SimpleResponse("Will stop data collection", true);
     }
 
-    @ApiOperation(value = "Get if data collection service should run", tags = "Metrics")
+    @ApiOperation(value = "Get if data collection service should run", tags = "Data Collection")
     @RequestMapping(value = "/shouldRun/{username}", method = RequestMethod.GET ,produces="application/json")
     // This is the elderly username
     public SimpleResponse shouldRun(@PathVariable(value="username") String username) {
@@ -403,4 +388,12 @@ public class MetricsController {
         }
     }
 
-}
+    @ApiOperation(value = "Send activity of user", tags = "Activity Recognition")
+    @RequestMapping(value = "/activity/{username}", method = RequestMethod.POST ,produces="application/json")
+    // This is the elderly username
+    public SimpleResponse activity(@PathVariable(value="username") String username) {
+        return new SimpleResponse("", false);
+    }
+
+
+    }
