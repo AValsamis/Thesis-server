@@ -37,8 +37,6 @@ public class MetricsController {
 
     @Autowired
     private AccelerometerStatsRepository accelerometerStatsRepository;
-    @Autowired
-    private OrientationStatsRepository orientationStatsRepository;
 
     @Autowired
     private DataCollectionServiceStatusRepository dataCollectionServiceStatusRepository;
@@ -256,8 +254,6 @@ public class MetricsController {
 //        System.out.println("Putting data from packet in DB for user: " + dataPacket.getUser().getUsername());
 
         ArrayList<AccelerometerStats> accelerometerStats = dataPacket.getAccelerometerStats();
-        ArrayList<OrientationStats> orientationStats = dataPacket.getOrientationStats();
-
 
         for(AccelerometerStats accelerometerStats1 : accelerometerStats)
         {
@@ -270,18 +266,6 @@ public class MetricsController {
 
             accelerometerStats1.setUser(userFromDB);
             accelerometerStatsRepository.save(accelerometerStats1);
-        }
-        for(OrientationStats orientationStats1 : orientationStats)
-        {
-            User userFromDB = userRepository.findByUsername(dataPacket.getUser().getUsername());
-            if(userFromDB==null || userFromDB.getUsername()==null)
-                userRepository.save(dataPacket.getUser());
-            else{
-                orientationStats1.setUser(userFromDB);
-            }
-
-            orientationStats1.setUser(userFromDB);
-            orientationStatsRepository.save(orientationStats1);
         }
 
 //        System.out.println(dataPacket.toString());

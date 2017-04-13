@@ -1,7 +1,6 @@
 package gr.uoa.di.repository;
 
 import gr.uoa.di.entities.ElderlyResponsible;
-import gr.uoa.di.entities.OrientationStats;
 import gr.uoa.di.entities.User;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

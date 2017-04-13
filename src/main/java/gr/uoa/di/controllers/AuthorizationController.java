@@ -58,20 +58,4 @@ public class AuthorizationController {
         else
             return new SimpleResponse("Password is incorrect or user was not found in our database",false, isElderly);
     }
-
-
-    @ApiOperation(value = "Refreshed user's messaging token", tags = "Authorization")
-    @RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
-    public SimpleResponse refreshToken(@RequestParam(value="username") String username, @RequestParam(value="token") String token) {
-        User userFromDB = userRepository.findByUsername(username);
-        System.out.println("trying to refresh token");
-        if (userFromDB!=null)
-            userFromDB.setToken(token);
-        userFromDB = userRepository.save(userFromDB);
-
-        if(userFromDB!=null && userFromDB.getUsername()!=null)
-            return new SimpleResponse(username +"'s token refreshed", true);
-        else
-            return new SimpleResponse("User was not found in our database",false);
-    }
 }
