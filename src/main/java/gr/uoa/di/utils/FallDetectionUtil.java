@@ -71,6 +71,7 @@ public class FallDetectionUtil {
 //            System.out.println(cal.getTime());
             dNow = cal.getTime();
             String timestamp = format1.format(dNow);
+            accelerometerStatsRepository.deleteOldData(timestamp);
             accelerometerDatas = accelerometerStatsRepository.findByTimeStamp(timestamp, username);
 
 
@@ -111,7 +112,8 @@ public class FallDetectionUtil {
 
             }
             User elderly = userRepository.findByUsername(username);
-            User guardian = userRepository.findByUsername(elderly.getResponsibleUserName());
+            Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(elderly.getUserId());
+            User guardian = userRepository.findOne(guardianId);
 
             if(fallCertainty==1)
             {

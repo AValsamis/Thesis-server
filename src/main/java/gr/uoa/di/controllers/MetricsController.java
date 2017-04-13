@@ -137,7 +137,7 @@ public class MetricsController {
 
         System.out.println("SENT LIST OF ZONES: " + Arrays.asList(wifis));
         User userfromDb = userRepository.findByUsername(user.getUsername());
-        Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(userfromDb.getId());
+        Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(userfromDb.getUserId());
         // handle case where no zones exist for use
         List <Zone> zones = zoneRepository.findZonesByUserId(guardianId);
         if(zones==null || zones.size()==0)
@@ -288,13 +288,6 @@ public class MetricsController {
         return new SimpleResponse("Invoked with: " + dataPacket.toString(),true);
     }
 
-    @ApiOperation(value = "Find if user is elderly by username", tags = "User")
-    @RequestMapping(value = "/isElderly/{username}", method = RequestMethod.GET ,produces="application/json")
-    public boolean isElderly(@PathVariable(value="username") String username) {
-        User userFromDB = userRepository.findByUsername(username);
-        return userFromDB.getResponsibleUserName() != null;
-    }
-
     @ApiOperation(value = "Start data collection service", tags = "Data Collection")
     @RequestMapping(value = "/startDataCollection", method = RequestMethod.POST ,consumes="application/json")
     // This is the responsible user
@@ -306,7 +299,7 @@ public class MetricsController {
 
         User responsible = userRepository.findByUsername(user.getUsername());
 
-        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getId());
+        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getUserId());
 
         User elderly = userRepository.findOne(elderlyId);
 
@@ -347,8 +340,9 @@ public class MetricsController {
 
         User responsible = userRepository.findByUsername(user.getUsername());
 
-        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getId());
+        Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getUserId());
 
+        // TODO bug
         User elderly = userRepository.findOne(elderlyId);
 
         dataCollectionServiceStatus.setUser(elderly);
@@ -368,8 +362,8 @@ public class MetricsController {
         System.out.println("Should run?"+username);
 
         User user = userRepository.findByUsername(username);
-        if(user.getResponsibleUserName()!=null) {
-            List<DataCollectionServiceStatus> serviceStatus = dataCollectionServiceStatusRepository.getLatestTimestampForUser(user.getId());
+        if(elderlyResponsibleRepository.findAssociatedGuardian(user.getUserId())!=null) {
+            List<DataCollectionServiceStatus> serviceStatus = dataCollectionServiceStatusRepository.getLatestTimestampForUser(user.getUserId());
             if (serviceStatus != null && serviceStatus.size() > 0 && serviceStatus.get(0) != null) {
                 return new SimpleResponse("", serviceStatus.get(0).getShouldRun());
             }
@@ -378,7 +372,7 @@ public class MetricsController {
         }
         else
         {
-            Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(user.getId());
+            Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(user.getUserId());
             User elderly = userRepository.findOne(elderlyId);
             List<DataCollectionServiceStatus> serviceStatus = dataCollectionServiceStatusRepository.getLatestTimestampForUser(elderly.getId());
             if (serviceStatus != null && serviceStatus.size() > 0 && serviceStatus.get(0) != null)

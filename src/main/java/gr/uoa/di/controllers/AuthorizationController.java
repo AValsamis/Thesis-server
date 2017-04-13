@@ -38,7 +38,7 @@ public class AuthorizationController {
             }
             else
                 return  new SimpleResponse("User with username "+ user.getUsername() +" already exists in database.",false);
-        return new SimpleResponse("User succesfully created with id = " + user.getId(),true);
+        return new SimpleResponse("User succesfully created with id = " + user.getUserId(),true);
     }
 
 
@@ -49,7 +49,7 @@ public class AuthorizationController {
         User userFromDB = userRepository.findByUsername(username);
 
         boolean isElderly = false;
-        if (userFromDB.getResponsibleUserName()!=null)
+        if (elderlyResponsibleRepository.findAssociatedGuardian(userFromDB.getUserId())!=null)
             isElderly = true;
         userFromDB.setToken(token);
         userFromDB = userRepository.save(userFromDB);

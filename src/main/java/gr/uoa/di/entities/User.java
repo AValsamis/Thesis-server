@@ -19,6 +19,8 @@ public class User {
     private String name;
     private String surname;
     private String token;
+
+    @Transient
     private String responsibleUserName;
 
     @NotNull
