@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,5 +21,8 @@ public interface UserInZoneRepository extends CrudRepository<UserInZone,Long> {
 
     @Query("select u from UserInZone u where u.elderlyUser.userId=:userId order by u.id desc")
     public List<UserInZone> getCurrentZoneForUser(@Param("userId") Long userId);
+
+    @Query("select u from UserInZone u where u.elderlyUser.userId=:userId and u.timestamp>=:timestamp order by u.id desc")
+    public List<UserInZone> getZonesAfterImpact(@Param("userId") Long userId, @Param("timestamp") Date timestamp);
 
 }

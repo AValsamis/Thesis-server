@@ -47,7 +47,8 @@ public class AuthorizationController {
     public SimpleResponse login(@RequestParam(value="username") String username, @RequestParam(value="password") String password, @RequestParam(value="token")String token) {
         System.out.println("LOGIN: "+username+ " "+ password);
         User userFromDB = userRepository.findByUsername(username);
-
+        if(userFromDB==null)
+            return new SimpleResponse("Password is incorrect or user was not found in our database",false, false);
         boolean isElderly = false;
         if (elderlyResponsibleRepository.findAssociatedGuardian(userFromDB.getUserId())!=null)
             isElderly = true;

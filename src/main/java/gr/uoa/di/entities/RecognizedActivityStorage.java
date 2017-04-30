@@ -10,13 +10,17 @@ import java.util.Date;
  * Created by skand on 4/14/2017.
  */
 
+@Entity
+@Table(name = "recognizedActivityStorage")
+public class RecognizedActivityStorage implements Serializable {
 
-public class RecognizedActivity implements Serializable {
-
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ManyToOne
+    @JoinColumn(name = "userId")
     private User user;
-    private String timestamp;
+    private Date timestamp;
     private String state;
     private Integer certainty;
 
@@ -36,11 +40,11 @@ public class RecognizedActivity implements Serializable {
         this.user = user;
     }
 
-    public String getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 

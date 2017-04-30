@@ -10,7 +10,6 @@ import java.io.Serializable;
  */
 @Entity
 @IdClass(ElderlyResponsiblePK.class)
-// TODO check if class is needed after all...
 public class ElderlyResponsible implements Serializable {
 
     @Id

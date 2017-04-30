@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,6 +48,9 @@ public class MetricsController {
 
     @Autowired
     private UserInZoneRepository userInZoneRepository;
+
+    @Autowired
+    private RecognizedActivityStorageRepository recognizedActivityStorageRepository;
 
     private static final int maximum = 360;
     private static final int minimum = 0;
@@ -115,7 +120,6 @@ public class MetricsController {
                     signalStrengthSum += wifi.getSignalStrength().get(i);
                 }
                 Double signalStrength = (signalStrengthSum/wifi.getSignalStrength().size());
-                // TODO ???
                 if(signalStrength > -80.0) {
                     wifiInZone.setSignalStrength(signalStrength);
                     wifiInZoneRepository.save(wifiInZone);
@@ -153,7 +157,6 @@ public class MetricsController {
             }
             Double closest = (signalStrengthSum/wifi.getSignalStrength().size());
             System.out.println("Wifi name: " + wifi.getName() + " ss: " + closest);
-            // TODO ???
             if(closest <= -80.0)
             {
                 System.out.println("Bypassing wifi: " + wifi.getName() + "...");
@@ -326,7 +329,6 @@ public class MetricsController {
 
         Long elderlyId = elderlyResponsibleRepository.findAssociatedElderly(responsible.getUserId());
 
-        // TODO bug
         User elderly = userRepository.findOne(elderlyId);
 
         dataCollectionServiceStatus.setUser(elderly);
@@ -367,11 +369,31 @@ public class MetricsController {
     }
 
     @ApiOperation(value = "Send activity of user", tags = "Activity Recognition")
-    @RequestMapping(value = "/activity/{username}", method = RequestMethod.POST ,produces="application/json")
+    @RequestMapping(value = "/activity", method = RequestMethod.POST ,consumes="application/json")
     // This is the elderly username
-    public SimpleResponse activity(@PathVariable(value="username") String username) {
-        return new SimpleResponse("", false);
+    public SimpleResponse activity(@RequestBody RecognizedActivity recognizedActivity) {
+
+        User userFromDb = userRepository.findByUsername(recognizedActivity.getUser().getUsername());
+        recognizedActivity.setUser(userFromDb);
+
+        RecognizedActivityStorage recognizedActivityStorage = new RecognizedActivityStorage();
+        recognizedActivityStorage.setUser(recognizedActivity.getUser());
+        recognizedActivityStorage.setCertainty(recognizedActivity.getCertainty());
+        recognizedActivityStorage.setState(recognizedActivity.getState());
+
+        String dateString = recognizedActivity.getTimestamp();
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            recognizedActivityStorage.setTimestamp(format1.parse(dateString));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        recognizedActivityStorage.setUser(recognizedActivity.getUser());
+
+        recognizedActivityStorageRepository.save(recognizedActivityStorage);
+        return new SimpleResponse("Successfully saved recognized activity: " + recognizedActivity.toString(), true);
     }
 
 
-    }
+}
