@@ -60,7 +60,16 @@ public class FallDetectionUtil {
         int fallCertainty = 0;
 
         try {
-
+            User elderly = userRepository.findByUsername(username);
+            List<UserInZone> userInZones = userInZoneRepository.getCurrentZoneForUser(elderly.getUserId());
+            if(userInZones.get(0).getZone()!=null) {
+                if (userInZones.get(0).getZone().getIsSafe() == 1) {
+                    MAX_DIFFERENCE = 2.7*G;
+                } else {
+                    MAX_DIFFERENCE = 2.3*G;
+                }
+            }
+            System.out.println("final value of MAX_DIFFERENCE: " + MAX_DIFFERENCE);
             Date dNow = new Date(); // Instantiate a Date object
             Calendar cal = Calendar.getInstance();
             cal.setTime(dNow);
@@ -107,7 +116,6 @@ public class FallDetectionUtil {
             }
 
             if(fallCertainty!=0) {
-                User elderly = userRepository.findByUsername(username);
                 Long guardianId = elderlyResponsibleRepository.findAssociatedGuardian(elderly.getUserId());
                 User guardian = userRepository.findOne(guardianId);
 

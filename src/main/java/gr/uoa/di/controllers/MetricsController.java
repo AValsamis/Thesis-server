@@ -198,10 +198,12 @@ public class MetricsController {
                     }
                 }
                 else
-                    System.out.println("Wifi " + wifi.getName() + " not counted!");
-
+                {
+                    closestZones.add("unknown");
+                }
             }
         }
+
         Map<String, Long> counts =
                 closestZones.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
         System.out.println(counts);
@@ -209,19 +211,55 @@ public class MetricsController {
         Long maxCount =  Collections.max(counts.values());
         System.out.println(maxCount);
 
+        Zone zoneFromDb = null;
+        UserInZone userInZone = new UserInZone();
+        boolean checkUnknown=true;
+        boolean unknown = false;
         for (Object o : counts.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
             if (pair.getValue() == maxCount){
-                System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
-                UserInZone userInZone = new UserInZone();
-                userInZone.setElderlyUser(userfromDb);
-                Zone zoneFromDb = zoneRepository.findByFriendlyName(pair.getKey().toString());
-                userInZone.setZone(zoneFromDb);
-                userInZone.setTimestamp(new Date());
-                userInZoneRepository.save(userInZone);
-                return new SimpleResponse(pair.getKey().toString());
+                if(!pair.getKey().toString().equals("unknown")) {
+                    checkUnknown=false;
+                    if(unknown) unknown=false;
+                    System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
+                    userInZone.setElderlyUser(userfromDb);
+                    zoneFromDb = zoneRepository.findByFriendlyName(pair.getKey().toString());
+                    // If max votes are for danger zones, return it immediately, else if it a safe zone
+                    // continue to see if it draws with any danger zone, and if so return this zone instead
+                    if (zoneFromDb.getIsSafe() == 0) {
+                        userInZone.setZone(zoneFromDb);
+                        userInZone.setTimestamp(new Date());
+                        userInZoneRepository.save(userInZone);
+                        return new SimpleResponse(pair.getKey().toString());
+                    }
+                }
+                else
+                {
+                    if(checkUnknown)
+                    {
+                        unknown = true;
+                    }
+                }
             }
         }
+
+        if(unknown)
+        {
+            userInZone.setElderlyUser(userfromDb);
+            userInZone.setZone(null);
+            userInZone.setTimestamp(new Date());
+            userInZoneRepository.save(userInZone);
+            return new SimpleResponse("unknown");
+        }
+
+        if(zoneFromDb!=null)
+        {
+            userInZone.setZone(zoneFromDb);
+            userInZone.setTimestamp(new Date());
+            userInZoneRepository.save(userInZone);
+            return new SimpleResponse(zoneFromDb.getFriendlyName());
+        }
+
         return null;
     }
 
