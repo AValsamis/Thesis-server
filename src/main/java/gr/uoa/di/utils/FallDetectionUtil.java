@@ -174,10 +174,10 @@ public class FallDetectionUtil {
                                         else
                                             fromActivityString = " and while sittng/sleeping.";
                                     if (userInZones != null && userInZones.size() > 0) {
-                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName(), "Possible danger");
+                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName(), fallConfidence);
                                         System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName());
                                     } else {
-                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown", "Sure danger");
+                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown", fallConfidence);
                                         System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown");
                                     }
                                 } catch (IOException e) {
