@@ -58,12 +58,14 @@ public class FallDetectionUtil {
         System.out.println("FALL DETECTION RUNNING");
         System.out.println("------------------------");
         int fallCertainty = 0;
+        boolean safeZone = false;
 
         try {
             User elderly = userRepository.findByUsername(username);
             List<UserInZone> userInZones = userInZoneRepository.getCurrentZoneForUser(elderly.getUserId());
             if(userInZones.get(0).getZone()!=null) {
                 if (userInZones.get(0).getZone().getIsSafe() == 1) {
+                    safeZone = true;
                     MAX_DIFFERENCE = 2.7*G;
                 } else {
                     MAX_DIFFERENCE = 2.3*G;
@@ -123,6 +125,7 @@ public class FallDetectionUtil {
 
 
                 int finalFallCertainty = fallCertainty;
+                boolean finalSafeZone = safeZone;
                 TimerTask delayedThreadStartTask = new TimerTask() {
                     @Override
                     public void run() {
@@ -138,7 +141,7 @@ public class FallDetectionUtil {
 
                                     List<RecognizedActivityStorage> recognizedActivitiesBefore = recognizedActivityStorageRepository.getActivityBeforeImpact(elderly.getUserId(), impactTimestamp);
 
-                                    List<RecognizedActivityStorage> recognizedActivitiesAfter = recognizedActivityStorageRepository.getActivityBeforeImpact(elderly.getUserId(), impactTimestamp);
+                                    List<RecognizedActivityStorage> recognizedActivitiesAfter = recognizedActivityStorageRepository.getActivityAfterImpact(elderly.getUserId(), impactTimestamp);
 
                                     Boolean conscious = null;
                                     Boolean fromActivity = null;
@@ -173,12 +176,16 @@ public class FallDetectionUtil {
                                             fromActivityString = " and while light activity.";
                                         else
                                             fromActivityString = " and while sittng/sleeping.";
-                                    if (userInZones != null && userInZones.size() > 0) {
-                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName(), fallConfidence);
-                                        System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + userInZones.get(0).getZone().getFriendlyName());
-                                    } else {
-                                        guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown", fallConfidence);
-                                        System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown");
+
+                                    // don't send notification in case of "possible fall" && safe zone
+                                    if(!fallConfidence.equals("Possible fall.") || !finalSafeZone ) {
+                                        if (userInZones != null && userInZones.size() > 0) {
+                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + (userInZones.get(0).getZone()!=null?userInZones.get(0).getZone().getFriendlyName():"unknown"), fallConfidence);
+                                            System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + (userInZones.get(0).getZone()!=null?userInZones.get(0).getZone().getFriendlyName():"unknown"));
+                                        } else {
+                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown", fallConfidence);
+                                            System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown");
+                                        }
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
