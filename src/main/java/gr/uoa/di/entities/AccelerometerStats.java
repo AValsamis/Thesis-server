@@ -2,9 +2,6 @@ package gr.uoa.di.entities;
 
 import javax.persistence.*;
 
-/**
- * Created by Angelos on 6/19/2016.
- */
 @Entity
 @Table(name = "accelerometerStats")
 public class AccelerometerStats {

@@ -11,9 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Created by skand on 10/16/2016.
- */
 @Transactional
 @Repository
 public interface ZoneRepository extends CrudRepository<Zone,Long> {

@@ -11,10 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Created by skand on 3/12/2017.
- */
-
 @Transactional
 @Repository
 public interface DataCollectionServiceStatusRepository extends CrudRepository<DataCollectionServiceStatus,Long> {

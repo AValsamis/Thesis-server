@@ -10,10 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by skand on 4/14/2017.
- */
-
 @Transactional
 @Repository
 public interface RecognizedActivityStorageRepository extends CrudRepository<RecognizedActivityStorage,Long> {

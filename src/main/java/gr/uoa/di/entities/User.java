@@ -3,9 +3,6 @@ package gr.uoa.di.entities;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-/**
- * Created by Angelos on 9/18/2016.
- */
 @Entity
 @Table(name = "user")
 public class User {

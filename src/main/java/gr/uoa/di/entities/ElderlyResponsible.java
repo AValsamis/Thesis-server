@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import java.io.Serializable;
 
-/**
- * Created by skand on 2/5/2017.
- */
 @Entity
 @IdClass(ElderlyResponsiblePK.class)
 public class ElderlyResponsible implements Serializable {

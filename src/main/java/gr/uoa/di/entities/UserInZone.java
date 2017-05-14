@@ -3,9 +3,6 @@ package gr.uoa.di.entities;
 import javax.persistence.*;
 import java.util.Date;
 
-/**
- * Created by skand on 3/26/2017.
- */
 @Entity
 @Table(name = "userInZone")
 public class UserInZone {

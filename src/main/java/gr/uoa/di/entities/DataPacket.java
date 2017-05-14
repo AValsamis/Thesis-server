@@ -2,9 +2,6 @@ package gr.uoa.di.entities;
 
 import java.util.ArrayList;
 
-/**
- * Created by skand on 11/21/2016.
- */
 public class DataPacket {
 
     private ArrayList<AccelerometerStats> accelerometerStats;

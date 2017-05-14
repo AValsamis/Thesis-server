@@ -5,10 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Created by skand on 10/16/2016.
- */
-
 @Transactional
 @Repository
 public interface WifiRepository extends CrudRepository<Wifi,Long> {

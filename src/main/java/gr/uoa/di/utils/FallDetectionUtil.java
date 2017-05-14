@@ -16,9 +16,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Created by skand on 3/26/2017.
- */
 @Component
 public class FallDetectionUtil {
 
@@ -139,8 +136,8 @@ public class FallDetectionUtil {
                                     if (finalFallCertainty == 2)
                                         fallConfidence = "Sure fall.";
 
+                                    System.out.println("Fall confidence: " + fallConfidence);
                                     List<RecognizedActivityStorage> recognizedActivitiesBefore = recognizedActivityStorageRepository.getActivityBeforeImpact(elderly.getUserId(), impactTimestamp);
-
                                     List<RecognizedActivityStorage> recognizedActivitiesAfter = recognizedActivityStorageRepository.getActivityAfterImpact(elderly.getUserId(), impactTimestamp);
 
                                     Boolean conscious = null;
@@ -148,6 +145,9 @@ public class FallDetectionUtil {
 
                                     if (recognizedActivitiesBefore != null && recognizedActivitiesBefore.size() > 0 &&
                                             recognizedActivitiesAfter != null && recognizedActivitiesAfter.size() > 0) {
+                                        System.out.println("Activity before: " + recognizedActivitiesBefore.get(0).getState());
+                                        System.out.println("Activity after: " + recognizedActivitiesAfter.get(0).getState());
+
                                         String activityBefore = recognizedActivitiesBefore.get(0).getState();
                                         String activityAfter = recognizedActivitiesAfter.get(0).getState();
                                         if (!activityBefore.equals("still") && activityAfter.equals("still")) {

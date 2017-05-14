@@ -3,9 +3,6 @@ package gr.uoa.di.entities;
 import javax.persistence.*;
 import java.util.Set;
 
-/**
- * Created by Sevle on 9/23/2016.
- */
 @Entity
 @Table(name = "zone")
 public class Zone {

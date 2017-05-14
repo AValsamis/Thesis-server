@@ -9,9 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Properties;
 
-/**
- * Created by Angelos on 3/24/2017.
- */
 @Component
 public class GuardianNotification {
 

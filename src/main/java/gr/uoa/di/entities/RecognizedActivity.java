@@ -6,11 +6,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * Created by skand on 4/14/2017.
- */
-
-
 public class RecognizedActivity implements Serializable {
 
 

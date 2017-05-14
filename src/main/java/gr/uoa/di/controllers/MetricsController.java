@@ -19,9 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
- * Created by Angelos on 9/18/2016.
- */
 @RestController
 public class MetricsController {
 

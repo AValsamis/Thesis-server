@@ -11,10 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by skand on 3/26/2017.
- */
-
 @Transactional
 @Repository
 public interface UserInZoneRepository extends CrudRepository<UserInZone,Long> {

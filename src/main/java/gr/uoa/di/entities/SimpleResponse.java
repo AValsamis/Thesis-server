@@ -1,8 +1,5 @@
 package gr.uoa.di.entities;
 
-/**
- * Created by Sevle on 10/16/2016.
- */
 public class SimpleResponse {
 
 

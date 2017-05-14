@@ -8,9 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Created by skand on 2/5/2017.
- */
 @Transactional
 @Repository
 public interface ElderlyResponsibleRepository extends CrudRepository<ElderlyResponsible,Long> {

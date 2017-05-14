@@ -1,9 +1,5 @@
 package gr.uoa.di.repository;
 
-/**
- * Created by Angelos on 9/25/2016.
- */
-
 import gr.uoa.di.entities.User;
 
 import org.springframework.data.jpa.repository.Query;

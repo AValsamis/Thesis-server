@@ -10,10 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Created by skand on 11/21/2016.
- */
-
 @Transactional
 @Repository
 public interface AccelerometerStatsRepository extends CrudRepository<AccelerometerStats,Long> {

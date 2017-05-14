@@ -3,10 +3,6 @@ package gr.uoa.di.entities;
 import javax.persistence.*;
 import java.util.Date;
 
-/**
- * Created by skand on 3/12/2017.
- */
-
 @Entity
 @Table(name = "dataCollectionServiceStatus")
 public class DataCollectionServiceStatus {
