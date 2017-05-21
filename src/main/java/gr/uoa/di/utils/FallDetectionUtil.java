@@ -60,7 +60,7 @@ public class FallDetectionUtil {
         try {
             User elderly = userRepository.findByUsername(username);
             List<UserInZone> userInZones = userInZoneRepository.getCurrentZoneForUser(elderly.getUserId());
-            if(userInZones.get(0).getZone()!=null) {
+            if(userInZones!=null && userInZones.size()>0 && userInZones.get(0).getZone()!=null) {
                 if (userInZones.get(0).getZone().getIsSafe() == 1) {
                     safeZone = true;
                     MAX_DIFFERENCE = 2.7*G;

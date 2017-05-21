@@ -205,58 +205,54 @@ public class MetricsController {
                 closestZones.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
         System.out.println(counts);
 
-        Long maxCount =  Collections.max(counts.values());
-        System.out.println(maxCount);
+        if(counts!=null && counts.size()>0) {
+            Long maxCount = Collections.max(counts.values());
+            System.out.println(maxCount);
 
-        Zone zoneFromDb = null;
-        UserInZone userInZone = new UserInZone();
-        boolean checkUnknown=true;
-        boolean unknown = false;
-        for (Object o : counts.entrySet()) {
-            Map.Entry pair = (Map.Entry) o;
-            if (pair.getValue() == maxCount){
-                if(!pair.getKey().toString().equals("unknown")) {
-                    checkUnknown=false;
-                    if(unknown) unknown=false;
-                    System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
-                    userInZone.setElderlyUser(userfromDb);
-                    zoneFromDb = zoneRepository.findByFriendlyName(pair.getKey().toString());
-                    // If max votes are for danger zones, return it immediately, else if it a safe zone
-                    // continue to see if it draws with any danger zone, and if so return this zone instead
-                    if (zoneFromDb.getIsSafe() == 0) {
-                        userInZone.setZone(zoneFromDb);
-                        userInZone.setTimestamp(new Date());
-                        userInZoneRepository.save(userInZone);
-                        return new SimpleResponse(pair.getKey().toString());
-                    }
-                }
-                else
-                {
-                    if(checkUnknown)
-                    {
-                        unknown = true;
+            Zone zoneFromDb = null;
+            UserInZone userInZone = new UserInZone();
+            boolean checkUnknown = true;
+            boolean unknown = false;
+            for (Object o : counts.entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+                if (pair.getValue() == maxCount) {
+                    if (!pair.getKey().toString().equals("unknown")) {
+                        checkUnknown = false;
+                        if (unknown) unknown = false;
+                        System.out.println(pair.getKey().toString() + " " + pair.getValue().toString());
+                        userInZone.setElderlyUser(userfromDb);
+                        zoneFromDb = zoneRepository.findByFriendlyName(pair.getKey().toString());
+                        // If max votes are for danger zones, return it immediately, else if it a safe zone
+                        // continue to see if it draws with any danger zone, and if so return this zone instead
+                        if (zoneFromDb.getIsSafe() == 0) {
+                            userInZone.setZone(zoneFromDb);
+                            userInZone.setTimestamp(new Date());
+                            userInZoneRepository.save(userInZone);
+                            return new SimpleResponse(pair.getKey().toString());
+                        }
+                    } else {
+                        if (checkUnknown) {
+                            unknown = true;
+                        }
                     }
                 }
             }
-        }
 
-        if(unknown)
-        {
-            userInZone.setElderlyUser(userfromDb);
-            userInZone.setZone(null);
-            userInZone.setTimestamp(new Date());
-            userInZoneRepository.save(userInZone);
-            return new SimpleResponse("unknown");
-        }
+            if (unknown) {
+                userInZone.setElderlyUser(userfromDb);
+                userInZone.setZone(null);
+                userInZone.setTimestamp(new Date());
+                userInZoneRepository.save(userInZone);
+                return new SimpleResponse("unknown");
+            }
 
-        if(zoneFromDb!=null)
-        {
-            userInZone.setZone(zoneFromDb);
-            userInZone.setTimestamp(new Date());
-            userInZoneRepository.save(userInZone);
-            return new SimpleResponse(zoneFromDb.getFriendlyName());
+            if (zoneFromDb != null) {
+                userInZone.setZone(zoneFromDb);
+                userInZone.setTimestamp(new Date());
+                userInZoneRepository.save(userInZone);
+                return new SimpleResponse(zoneFromDb.getFriendlyName());
+            }
         }
-
         return null;
     }
 
