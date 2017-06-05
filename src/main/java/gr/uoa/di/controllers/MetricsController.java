@@ -51,6 +51,9 @@ public class MetricsController {
 
     private static final int maximum = 360;
     private static final int minimum = 0;
+    private static final double MAX_DB_NOISE = -80.0;
+    private static final double MAX_DISTANCE_FROM_ZONE = 5.0;
+    private static final double MAX_DISTANCE_FOR_ADDITIONAL = 1.5;
 
     @PostConstruct
     void initializeFallDetectionProcesses() throws IOException {
@@ -117,7 +120,7 @@ public class MetricsController {
                     signalStrengthSum += wifi.getSignalStrength().get(i);
                 }
                 Double signalStrength = (signalStrengthSum/wifi.getSignalStrength().size());
-                if(signalStrength > -80.0) {
+                if(signalStrength > MAX_DB_NOISE) {
                     wifiInZone.setSignalStrength(signalStrength);
                     wifiInZoneRepository.save(wifiInZone);
                 }
@@ -154,7 +157,7 @@ public class MetricsController {
             }
             Double closest = (signalStrengthSum/wifi.getSignalStrength().size());
             System.out.println("Wifi name: " + wifi.getName() + " ss: " + closest);
-            if(closest <= -80.0)
+            if(closest <= -MAX_DB_NOISE)
             {
                 System.out.println("Bypassing wifi: " + wifi.getName() + "...");
                 continue;
@@ -172,7 +175,7 @@ public class MetricsController {
                     System.out.println("diff for zone " + wifiInZones[i].getZone().getFriendlyName() + " is: " + diff);
                     if (diff < min) {
                         min = diff;
-                        if(min <= 5.0)
+                        if(min <= MAX_DISTANCE_FROM_ZONE)
                         {
                             finalmin = i;
                         }
@@ -187,7 +190,7 @@ public class MetricsController {
                     {
                         if (i==finalmin) continue;
                         final Double diff = Math.abs(wifiInZones[i].getSignalStrength() - closest);
-                        if (diff - min <= 1.5) {
+                        if (diff - min <= MAX_DISTANCE_FOR_ADDITIONAL) {
                             System.out.println("I ve also added "+wifiInZones[i].getZone().getFriendlyName() +" as closest");
                             closestByName = zoneRepository.findFrienldyNameByZoneId(wifiInZones[i].getZone().getZoneId());
                             closestZones.add(closestByName);
@@ -255,14 +258,7 @@ public class MetricsController {
         }
         return null;
     }
-
-    @ApiOperation(value = "Send if user is in danger zone", tags = "Zone")
-    @RequestMapping(value = "/isInDangerZone", method = RequestMethod.POST ,consumes="application/json")
-    public boolean isInDangerZone(@RequestParam(value="Signal Strength List") List<Zone> signalStrengths) {
-        //check if user is in danger zone and send true if he is/false otherwise
-        return true;
-    }
-
+    
     @ApiOperation(value = "Send safe zones of user", tags = "Zone")
     @RequestMapping(value = "/safeZones/{user}", method = RequestMethod.GET ,produces="application/json")
     public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") String user) {
