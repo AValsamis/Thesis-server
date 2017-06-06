@@ -157,7 +157,7 @@ public class MetricsController {
             }
             Double closest = (signalStrengthSum/wifi.getSignalStrength().size());
             System.out.println("Wifi name: " + wifi.getName() + " ss: " + closest);
-            if(closest <= -MAX_DB_NOISE)
+            if(closest <= MAX_DB_NOISE)
             {
                 System.out.println("Bypassing wifi: " + wifi.getName() + "...");
                 continue;
@@ -258,7 +258,7 @@ public class MetricsController {
         }
         return null;
     }
-    
+
     @ApiOperation(value = "Send safe zones of user", tags = "Zone")
     @RequestMapping(value = "/safeZones/{user}", method = RequestMethod.GET ,produces="application/json")
     public ResponseEntity<List<Zone>> safeZonesForUser(@PathVariable(value="user") String user) {
