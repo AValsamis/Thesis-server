@@ -37,8 +37,8 @@ public class FallDetectionUtil {
     private static double G = 9.81;
     private static double LOWER_THRESHOLD = 0.5*G;
     private static double MAX_DIFFERENCE = 2.5*G;
-    private static int MAX_TRIES = 30;
-    private static int MAX_TRIES_AFTER_FALL = 30;
+    private static int MAX_TIME_AFTER_FREE_FALL = 3;
+    private static int MAX_TIME_AFTER_IMPACT = 5;
     private static int MAX_STABLE_INTERVAL = 5;
     private static int LAST_X_MINUTES = 2;
     private static int DEGREES_THRESHOLD = 35;
@@ -80,9 +80,11 @@ public class FallDetectionUtil {
             accelerometerStatsRepository.deleteOldData(timestamp);
             accelerometerDatas = accelerometerStatsRepository.findByTimeStamp(timestamp, username);
 
-
+            if(accelerometerDatas!=null && accelerometerDatas.size()>0) {
+                System.out.println("Started from id: " + accelerometerDatas.get(0).getId() + " until id: " + accelerometerDatas.get(accelerometerDatas.size() - 1).getId());
+                System.out.println("Started from timestamp: " + accelerometerDatas.get(0).getTimeStamp() + " until timestamp: " + accelerometerDatas.get(accelerometerDatas.size() - 1).getTimeStamp());
+            }
             LinkedList<AccelerometerStats> remainingAccelerometerDatas = new LinkedList<>();
-
             while(accelerometerDatas!=null && accelerometerDatas.size()>1)
             {
                 Double preFallAcceleration = preFallPhaseDetected(accelerometerDatas);
@@ -91,8 +93,6 @@ public class FallDetectionUtil {
                 boolean fallDetected = false;
                 boolean fallDetectedAgain = false;
                 if (preFallAcceleration != -1.0) {
-                    System.out.println("PrefallPhaseDetected: Acceleration: "+preFallAcceleration/G+"G");
-
                     remainingAccelerometerDatas = new LinkedList<>();
                     remainingAccelerometerDatas.addAll(accelerometerDatas);
                     fallDetected = fallDetected(accelerometerDatas, preFallAcceleration);
@@ -168,22 +168,22 @@ public class FallDetectionUtil {
                                     String consciousString = "", fromActivityString = "";
                                     if (conscious != null)
                                         if (conscious)
-                                            consciousString = " Propably conscious";
+                                            consciousString = " Probably conscious";
                                         else
                                             consciousString = " Probably unconscious";
                                     if (fromActivity != null)
                                         if (fromActivity)
                                             fromActivityString = " and while light activity.";
                                         else
-                                            fromActivityString = " and while sittng/sleeping.";
+                                            fromActivityString = " and while sitting/sleeping.";
 
                                     // don't send notification in case of "possible fall" && safe zone
                                     if(!fallConfidence.equals("Possible fall.") || !finalSafeZone ) {
                                         if (userInZones != null && userInZones.size() > 0) {
-                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + (userInZones.get(0).getZone()!=null?userInZones.get(0).getZone().getFriendlyName():"unknown"), fallConfidence);
+                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: saloni", fallConfidence);
                                             System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: " + (userInZones.get(0).getZone()!=null?userInZones.get(0).getZone().getFriendlyName():"unknown"));
                                         } else {
-                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown", fallConfidence);
+                                            guardianNotification.sendAndroidNotification(guardian.getToken(), fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: saloni", fallConfidence);
                                             System.out.println(fallConfidence + consciousString + fromActivityString + " for " + elderly.getUsername() + " in zone: unknown");
                                         }
                                     }
@@ -215,6 +215,7 @@ public class FallDetectionUtil {
 //            System.out.println(squareSum);
             if (squareSum < LOWER_THRESHOLD) {
                 // Possible fall
+                 System.out.println("PrefallPhaseDetected: Acceleration: "+squareSum/G+"G");
                 accelerometerDatas = accelerometerData.subList(i + 1, accelerometerData.size());
                 return squareSum;
             }
@@ -224,22 +225,41 @@ public class FallDetectionUtil {
 
     private boolean fallDetected(List<AccelerometerStats> accelerometerData, double preFallAcceleration)
     {
-        int count=0;
+        Date firstTimestamp = null;
+        String firstTimestampString = accelerometerData.get(0).getTimeStamp();
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            firstTimestamp = format1.parse(firstTimestampString);
+            System.out.println("Measuring from firstTimestamp : " + firstTimestamp.toString());
 
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        double maxImpact =0.0;
         for (int i=0; i < accelerometerData.size(); i++) {
-            if(count==MAX_TRIES)
-                break;
+            Date thisTimestamp;
+            String thisTimestampString = accelerometerData.get(i).getTimeStamp();
+            try {
+                thisTimestamp = format1.parse(thisTimestampString);
+                if((thisTimestamp.getTime()-firstTimestamp.getTime())/1000 > MAX_TIME_AFTER_FREE_FALL)
+                    break;
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             AccelerometerStats accelerometerData1 = accelerometerData.get(i);
             double squareSum = Math.sqrt(Math.pow(Double.parseDouble(accelerometerData1.getX()), 2) + Math.pow(Double.parseDouble(accelerometerData1.getY()), 2) + Math.pow(Double.parseDouble(accelerometerData1.getZ()), 2));
 
-            System.out.println("Impact detected: Acceleration "+(squareSum-preFallAcceleration)/G+"G");
-
+//            System.out.println("Impact detected: Acceleration "+(squareSum-preFallAcceleration)/G+"G");
+            if (maxImpact<((squareSum-preFallAcceleration)/G))
+                maxImpact= ((squareSum-preFallAcceleration)/G);
             if (squareSum - preFallAcceleration > MAX_DIFFERENCE) {
                 String timestampString = accelerometerData1.getTimeStamp();
-
-                SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     impactTimestamp = format1.parse(timestampString);
+                    System.out.println("Above threshold Impact detected : Acceleration "+maxImpact+"G at timestamp: "+impactTimestamp);
+
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -247,18 +267,36 @@ public class FallDetectionUtil {
                 accelerometerDatas = accelerometerData.subList(i + 1, accelerometerData.size());
                 return true;
             }
-            count++;
         }
+        System.out.println("Below threshold Impact detected : Acceleration "+maxImpact+"G");
         return false;
     }
 
     private static boolean afterFallPhaseDetected(List<AccelerometerStats> accelerometerData)
     {
-        int count = 0, count2=0, tries=0;
+        int count = 0, count2=0;
+        Date firstTimestamp = null;
+        String firstTimestampString = accelerometerData.get(0).getTimeStamp();
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            firstTimestamp = format1.parse(firstTimestampString);
+            System.out.println("Measuring from firstTimestamp : " + firstTimestamp.toString());
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         for (int i=0; i < accelerometerData.size(); i++) {
-            tries ++;
-            if(tries>MAX_TRIES_AFTER_FALL)
-                return false;
+            Date thisTimestamp;
+            String thisTimestampString = accelerometerData.get(i).getTimeStamp();
+            try {
+                thisTimestamp = format1.parse(thisTimestampString);
+                if((thisTimestamp.getTime()-firstTimestamp.getTime())/1000 > MAX_TIME_AFTER_IMPACT)
+                    break;
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             AccelerometerStats accelerometerData1 = accelerometerData.get(i);
             double squareSum = Math.sqrt(Math.pow(Double.parseDouble(accelerometerData1.getX()), 2) + Math.pow(Double.parseDouble(accelerometerData1.getY()), 2) + Math.pow(Double.parseDouble(accelerometerData1.getZ()), 2));
 //            System.out.println(squareSum);
